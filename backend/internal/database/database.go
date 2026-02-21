@@ -107,7 +107,7 @@ func Seed() {
 	// Delete any existing user with this email (including soft-deleted ones)
 	DB.Unscoped().Where("email = ?", "admin@charging.id").Delete(&models.User{})
 
-	adminUser = models.User{
+	adminUser := models.User{
 		Name:         "Super Admin",
 		Email:        "admin@charging.id",
 		Phone:        "081234567890",
