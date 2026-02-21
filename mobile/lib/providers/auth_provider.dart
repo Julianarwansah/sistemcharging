@@ -39,7 +39,7 @@ class AuthProvider extends ChangeNotifier {
     if (_user == null || _socket != null) return;
 
     final wsUrl =
-        AppConfig.apiUrl.replaceFirst('http', 'ws') + '/ws/${_user!.id}';
+        '${AppConfig.apiUrl.replaceFirst('http', 'ws')}/ws/${_user!.id}';
     WebSocket.connect(wsUrl).then((socket) {
       _socket = socket;
       socket.listen(

@@ -36,6 +36,14 @@ type GoogleLoginRequest struct {
 	IDToken string `json:"id_token" binding:"required"`
 }
 
+type RegisterAdminRequest struct {
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Phone    string `json:"phone"`
+	Password string `json:"password" binding:"required,min=6"`
+	Role     string `json:"role" binding:"required,oneof=admin super_admin"`
+}
+
 type AuthResponse struct {
 	Token string      `json:"token"`
 	User  models.User `json:"user"`
@@ -105,7 +113,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	// Strict check: Only allow admin role for this dashboard
-	if user.Role != "admin" {
+	// Strict check: Only allow admin related roles for this dashboard
+	if user.Role != "admin" && user.Role != "super_admin" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Akses ditolak. Anda bukan Administrator."})
 		return
 	}
@@ -205,6 +214,46 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
+}
+
+func (h *AuthHandler) RegisterAdmin(c *gin.Context) {
+	var req RegisterAdminRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if email already exists
+	var existing models.User
+	if err := h.DB.Where("email = ?", req.Email).First(&existing).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Email sudah terdaftar"})
+		return
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memproses password"})
+		return
+	}
+
+	admin := models.User{
+		Name:         req.Name,
+		Email:        req.Email,
+		Phone:        req.Phone,
+		Role:         req.Role, // Use the role from request
+		PasswordHash: string(hashedPassword),
+	}
+
+	if err := h.DB.Create(&admin).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal membuat akun admin"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Administrator baru berhasil dibuat",
+		"user":    admin,
+	})
 }
 
 func (h *AuthHandler) generateToken(userID uuid.UUID) (string, error) {

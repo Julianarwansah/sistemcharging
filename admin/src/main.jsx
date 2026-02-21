@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import Stations from './pages/Stations'
 import Transactions from './pages/Transactions'
 import UsersPage from './pages/Users'
+import AdminsPage from './pages/Admins'
 import SettingsPage from './pages/Settings'
 
 import Login from './pages/Login'
@@ -37,6 +38,7 @@ const router = createBrowserRouter([
       { path: '/stations', element: <Stations /> },
       { path: '/transactions', element: <Transactions /> },
       { path: '/users', element: <UsersPage /> },
+      { path: '/admins', element: <AdminsPage /> },
       { path: '/settings', element: <SettingsPage /> },
     ]
   }

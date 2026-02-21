@@ -7,6 +7,7 @@ import {
     Settings,
     LogOut,
     Zap,
+    ShieldCheck,
     X
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -20,7 +21,8 @@ const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: Zap, label: 'Stasiun', path: '/stations' },
     { icon: History, label: 'Transaksi', path: '/transactions' },
-    { icon: Users, label: 'Pengguna', path: '/users' },
+    { icon: Users, label: 'Pelanggan', path: '/users' },
+    { icon: ShieldCheck, label: 'Administrator', path: '/admins' },
     { icon: Settings, label: 'Pengaturan', path: '/settings' },
 ];
 

@@ -84,12 +84,13 @@ func main() {
 			protected.GET("/auth/profile", authHandler.Profile)
 			protected.POST("/auth/logout", authHandler.Logout)
 
-			// Admin routes
 			admin := protected.Group("/admin")
 			{
 				admin.GET("/stats", adminHandler.GetStats)
 				admin.GET("/users", adminHandler.ListUsers)
 				admin.GET("/transactions", adminHandler.ListTransactions)
+				admin.POST("/register", authHandler.RegisterAdmin)
+				admin.POST("/reset", adminHandler.ResetData)
 			}
 
 			// Stations

@@ -37,6 +37,7 @@ export const adminService = {
     topUp: (amount) => api.post('/wallet/topup', { amount }),
     adminTopUp: (userId, amount) => api.post('/admin/wallet/topup', { user_id: userId, amount }),
     resetData: () => api.post('/admin/reset'),
+    registerAdmin: (data) => api.post('/admin/register', data),
 };
 
 export default api;
