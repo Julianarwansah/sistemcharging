@@ -2,7 +2,7 @@ import React from 'react';
 import {
     TrendingUp,
     Users,
-    EvStation,
+    BatteryCharging,
     DollarSign,
     ArrowUpRight,
     ArrowDownRight,
@@ -57,7 +57,7 @@ export default function Dashboard() {
                 <StatCard
                     title="Stasiun Aktif"
                     value="42 / 45"
-                    icon={EvStation}
+                    icon={BatteryCharging}
                     trend="-2"
                     trendUp={false}
                     color="bg-orange-500"
