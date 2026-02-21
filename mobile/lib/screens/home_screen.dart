@@ -167,13 +167,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   _quickAction(
                     icon: Icons.map_rounded,
                     label: 'Peta Stasiun',
-                    onTap: () {},
+                    onTap: () => Navigator.pushNamed(context, '/map'),
                   ),
                   const SizedBox(width: 12),
                   _quickAction(
                     icon: Icons.person_rounded,
                     label: 'Profil',
-                    onTap: () {},
+                    onTap: () => Navigator.pushNamed(context, '/profile'),
                   ),
                 ],
               ),

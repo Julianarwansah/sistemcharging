@@ -13,6 +13,8 @@ import 'screens/station_detail_screen.dart';
 import 'screens/payment_screen.dart';
 import 'screens/charging_screen.dart';
 import 'screens/history_screen.dart';
+import 'screens/map_screen.dart';
+import 'screens/profile_screen.dart';
 
 void main() {
   runApp(const SistemChargingApp());
@@ -55,6 +57,8 @@ class SistemChargingApp extends StatelessWidget {
           '/payment': (_) => const PaymentScreen(),
           '/charging': (_) => const ChargingScreen(),
           '/history': (_) => const HistoryScreen(),
+          '/map': (_) => const StationMapScreen(),
+          '/profile': (_) => const ProfileScreen(),
         },
       ),
     );
