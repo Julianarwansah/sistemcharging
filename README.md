@@ -39,9 +39,12 @@ Sistem charging motor listrik berbasis scan QR → aplikasi mobile → pembayara
 5. **Monitor** → Real-time progress via WebSocket
 6. **Selesai** → Charger berhenti, sesi dicatat
 
-## Database Connections
+## Database & Admin Connections
 *   PostgreSQL: `localhost:5433` (User: `charging_user`, Pass: `charging_pass_2026`)
 *   Mosquitto: `localhost:1883` (MQTT) / `9001` (WebSocket)
+*   **Admin Dashboard Account**:
+    *   Email: `admin@charging.id`
+    *   Password: `admin123`
 
 ## API Endpoints
 

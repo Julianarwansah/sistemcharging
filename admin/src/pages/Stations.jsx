@@ -23,6 +23,7 @@ export default function Stations() {
     const fetchStations = async () => {
         try {
             const res = await adminService.getStations();
+            // Backend returns { "stations": [...], "total": X }
             setStations(res.data.stations || []);
         } catch (error) {
             console.error('Error fetching stations:', error);

@@ -75,14 +75,6 @@ func main() {
 		api.POST("/payments/callback", paymentHandler.Callback)
 		api.POST("/payments/pay/:id", paymentHandler.DummyPay)
 
-		// Admin routes (public for now)
-		admin := api.Group("/admin")
-		{
-			admin.GET("/stats", adminHandler.GetStats)
-			admin.GET("/users", adminHandler.ListUsers)
-			admin.GET("/transactions", adminHandler.ListTransactions)
-		}
-
 		// Protected routes
 		protected := api.Group("")
 		protected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
@@ -90,6 +82,14 @@ func main() {
 			// Profile
 			protected.GET("/auth/profile", authHandler.Profile)
 			protected.POST("/auth/logout", authHandler.Logout)
+
+			// Admin routes
+			admin := protected.Group("/admin")
+			{
+				admin.GET("/stats", adminHandler.GetStats)
+				admin.GET("/users", adminHandler.ListUsers)
+				admin.GET("/transactions", adminHandler.ListTransactions)
+			}
 
 			// Stations
 			protected.GET("/stations", stationHandler.List)

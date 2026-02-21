@@ -104,6 +104,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	// Strict check: Only allow admin role for this dashboard
+	if user.Role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Akses ditolak. Anda bukan Administrator."})
+		return
+	}
+
 	token, err := h.generateToken(user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal membuat token"})
