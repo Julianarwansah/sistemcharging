@@ -91,6 +91,14 @@ class ApiService {
     return jsonDecode(res.body);
   }
 
+  Future<Map<String, dynamic>> logout() async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiUrl}/auth/logout'),
+      headers: await _headers(),
+    );
+    return jsonDecode(res.body);
+  }
+
   // ─── Stations ───
   Future<Map<String, dynamic>> getStations() async {
     final res = await http.get(

@@ -14,6 +14,7 @@ type User struct {
 	Phone        string         `gorm:"size:20" json:"phone"`
 	PasswordHash string         `gorm:"size:255" json:"-"`
 	GoogleID     string         `gorm:"size:255;uniqueIndex" json:"-"`
+	IsOnline     bool           `gorm:"default:false" json:"is_online"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`

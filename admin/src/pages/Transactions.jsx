@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Search,
     Filter,
@@ -7,53 +7,38 @@ import {
     CheckCircle2,
     XCircle,
     Clock,
-    ArrowRight
+    ArrowRight,
+    Loader2
 } from 'lucide-react';
-
-const transactions = [
-    {
-        id: 'TRX-9482',
-        user: 'Budi Santoso',
-        station: 'Pakuwon Mall Station',
-        connector: 'Type 2 (AC)',
-        amount: 'Rp 45.000',
-        energy: '8.5 kWh',
-        date: '21 Feb 2024, 14:20',
-        status: 'Success'
-    },
-    {
-        id: 'TRX-9481',
-        user: 'Siti Aminah',
-        station: 'Tunjungan Plaza C1',
-        connector: 'CCS2 (DC)',
-        amount: 'Rp 120.500',
-        energy: '24.2 kWh',
-        date: '21 Feb 2024, 13:45',
-        status: 'Ongoing'
-    },
-    {
-        id: 'TRX-9480',
-        user: 'Agus Pratama',
-        station: 'Galaxy Mall 3 P2',
-        connector: 'Type 2 (AC)',
-        amount: 'Rp 32.000',
-        energy: '6.1 kWh',
-        date: '21 Feb 2024, 12:10',
-        status: 'Failed'
-    },
-    {
-        id: 'TRX-9479',
-        user: 'Rina Wijaya',
-        station: 'Pakuwon Mall Station',
-        connector: 'Type 2 (AC)',
-        amount: 'Rp 54.000',
-        energy: '10.2 kWh',
-        date: '21 Feb 2024, 11:30',
-        status: 'Success'
-    },
-];
+import { adminService } from '../services/api';
 
 export default function Transactions() {
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchTransactions();
+    }, []);
+
+    const fetchTransactions = async () => {
+        try {
+            const res = await adminService.getTransactions();
+            setTransactions(res.data || []);
+        } catch (error) {
+            console.error('Error fetching transactions:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 sm:space-y-8 max-w-full overflow-x-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -61,9 +46,9 @@ export default function Transactions() {
                     <h1 className="text-2xl sm:text-3xl font-bold break-words">Riwayat Transaksi</h1>
                     <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Daftar semua sesi charging dan pembayaran pengguna.</p>
                 </div>
-                <button className="bg-white/5 border border-white/10 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all w-full sm:w-auto shrink-0">
+                <button className="bg-white/5 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 border border-white/10 hover:bg-white/10 transition-all w-full sm:w-auto">
                     <Download className="w-5 h-5" />
-                    Ekspor Laporan
+                    Export CSV
                 </button>
             </div>
 
@@ -112,31 +97,30 @@ export default function Transactions() {
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {transactions.map((trx) => (
-                                <tr key={trx.id} className="hover:bg-white/[0.01] transition-colors group">
+                                <tr key={trx.id} className="hover:bg-white/[0.01] transition-colors">
                                     <td className="px-8 py-6">
-                                        <p className="font-bold text-sm">{trx.id}</p>
-                                        <p className="text-xs text-white/40 mt-1">{trx.user}</p>
+                                        <p className="font-bold text-sm">#{trx.id.substring(0, 8)}</p>
+                                        <p className="text-[10px] text-white/30 uppercase tracking-widest mt-1">
+                                            {new Date(trx.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        </p>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <p className="font-bold text-sm">{trx.station}</p>
-                                        <p className="text-xs text-white/40 mt-1">{trx.connector}</p>
+                                        <p className="font-bold text-sm">{trx.user?.name || 'Unknown'}</p>
+                                        <p className="text-xs text-white/40 mt-1">{trx.user?.email}</p>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <p className="font-bold text-sm text-primary">{trx.amount}</p>
-                                        <p className="text-xs text-white/40 mt-1">{trx.energy}</p>
+                                        <p className="text-sm font-medium">{trx.connector?.station?.name || 'Manual'}</p>
+                                        <p className="text-[10px] text-primary uppercase font-bold mt-1">{trx.connector?.connector_type || 'EV'}</p>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <p className="text-sm font-medium">{trx.date}</p>
+                                        <p className="font-bold text-sm">Rp {new Intl.NumberFormat('id-ID').format(trx.total_cost || 0)}</p>
+                                        <p className="text-[10px] text-white/30 uppercase mt-1">{trx.energy_kwh} kWh</p>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <div className={`flex items-center gap-2 text-xs font-bold ${trx.status === 'Success' ? 'text-primary' :
-                                            trx.status === 'Ongoing' ? 'text-blue-400' : 'text-red-400'
+                                        <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${trx.status === 'completed' || trx.status === 'paid' ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white/40'
                                             }`}>
-                                            {trx.status === 'Success' && <CheckCircle2 className="w-4 h-4" />}
-                                            {trx.status === 'Ongoing' && <Clock className="w-4 h-4 animate-pulse" />}
-                                            {trx.status === 'Failed' && <XCircle className="w-4 h-4" />}
                                             {trx.status}
-                                        </div>
+                                        </span>
                                     </td>
                                     <td className="px-8 py-6 text-right">
                                         <button className="p-2 bg-white/5 rounded-lg text-white/40 group-hover:text-white group-hover:bg-primary transition-all">

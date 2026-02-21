@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     TrendingUp,
     Users,
@@ -6,7 +6,8 @@ import {
     DollarSign,
     ArrowUpRight,
     ArrowDownRight,
-    Zap
+    Zap,
+    Loader2
 } from 'lucide-react';
 import {
     AreaChart,
@@ -17,6 +18,7 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
+import { adminService } from '../services/api';
 
 const data = [
     { name: '01 Feb', total: 4000 },
@@ -28,6 +30,36 @@ const data = [
 ];
 
 export default function Dashboard() {
+    const [stats, setStats] = useState(null);
+    const [stations, setStations] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const [statsRes, stationsRes] = await Promise.all([
+                    adminService.getStats(),
+                    adminService.getStations()
+                ]);
+                setStats(statsRes.data);
+                setStations(stationsRes.data.stations || []);
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDashboardData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 sm:space-y-8 max-w-full overflow-x-hidden">
             {/* Welcome Section */}
@@ -40,7 +72,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     title="Total Pendapatan"
-                    value="Rp 12.450.000"
+                    value={`Rp ${new Intl.NumberFormat('id-ID').format(stats?.total_revenue || 0)}`}
                     icon={DollarSign}
                     trend="+12.5%"
                     trendUp={true}
@@ -48,7 +80,7 @@ export default function Dashboard() {
                 />
                 <StatCard
                     title="Total Pengguna"
-                    value="1.284"
+                    value={stats?.total_users || 0}
                     icon={Users}
                     trend="+5.2%"
                     trendUp={true}
@@ -56,7 +88,7 @@ export default function Dashboard() {
                 />
                 <StatCard
                     title="Stasiun Aktif"
-                    value="42 / 45"
+                    value={`${stats?.active_stations || 0} / ${stations.length}`}
                     icon={BatteryCharging}
                     trend="-2"
                     trendUp={false}
@@ -64,7 +96,7 @@ export default function Dashboard() {
                 />
                 <StatCard
                     title="Total Energi"
-                    value="1.420 kWh"
+                    value={`${stats?.total_energy?.toFixed(1) || 0} kWh`}
                     icon={Zap}
                     trend="+8.1%"
                     trendUp={true}
@@ -130,14 +162,22 @@ export default function Dashboard() {
 
                 {/* Popular Stations Section */}
                 <div className="glass rounded-3xl p-6 lg:p-8">
-                    <h3 className="text-xl font-bold mb-6">Stasiun Populer</h3>
+                    <h3 className="text-xl font-bold mb-6">Stasiun Charging</h3>
                     <div className="space-y-6">
-                        <PopularStation name="Pakuwon Mall Station" uses="142" income="Rp 2.100.000" />
-                        <PopularStation name="Tunjungan Plaza C1" uses="98" income="Rp 1.450.000" />
-                        <PopularStation name="Galaxy Mall 3 P2" uses="76" income="Rp 1.100.000" />
-                        <PopularStation name="Grand City Station" uses="54" income="Rp 850.000" />
+                        {stations.slice(0, 4).map((station) => (
+                            <PopularStation
+                                key={station.id}
+                                name={station.name}
+                                uses={station.connectors?.length || 0}
+                                income={station.status}
+                                customLabel="status"
+                            />
+                        ))}
                     </div>
-                    <button className="w-full mt-8 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm font-medium">
+                    <button
+                        onClick={() => window.location.hash = '/stations'}
+                        className="w-full mt-8 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+                    >
                         Lihat Semua Stasiun
                     </button>
                 </div>
@@ -166,15 +206,19 @@ function StatCard({ title, value, icon: Icon, trend, trendUp, color }) {
     );
 }
 
-function PopularStation({ name, uses, income }) {
+function PopularStation({ name, uses, income, customLabel }) {
     return (
         <div className="flex items-center justify-between group">
-            <div>
-                <h5 className="font-bold text-sm group-hover:text-primary transition-colors">{name}</h5>
-                <p className="text-xs text-white/40 mt-0.5">{uses} transaksi hari ini</p>
+            <div className="min-w-0 pr-4">
+                <h5 className="font-bold text-sm group-hover:text-primary transition-colors truncate">{name}</h5>
+                <p className="text-xs text-white/40 mt-0.5">
+                    {customLabel === 'status' ? `${uses} connector` : `${uses} transaksi hari ini`}
+                </p>
             </div>
-            <div className="text-right">
-                <p className="font-bold text-sm text-primary">{income}</p>
+            <div className="text-right shrink-0">
+                <p className={`font-bold text-sm ${income === 'active' || income.startsWith('Rp') ? 'text-primary' : 'text-orange-500'}`}>
+                    {income}
+                </p>
             </div>
         </div>
     );

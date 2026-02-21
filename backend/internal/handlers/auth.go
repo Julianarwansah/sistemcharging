@@ -110,6 +110,10 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	// Update online status
+	user.IsOnline = true
+	h.DB.Save(&user)
+
 	c.JSON(http.StatusOK, AuthResponse{
 		Token: token,
 		User:  user,
@@ -164,6 +168,10 @@ func (h *AuthHandler) GoogleLogin(c *gin.Context) {
 		return
 	}
 
+	// Update online status
+	user.IsOnline = true
+	h.DB.Save(&user)
+
 	c.JSON(http.StatusOK, AuthResponse{
 		Token: token,
 		User:  user,
@@ -180,6 +188,17 @@ func (h *AuthHandler) Profile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+
+func (h *AuthHandler) Logout(c *gin.Context) {
+	userID := c.MustGet("user_id").(uuid.UUID)
+
+	if err := h.DB.Model(&models.User{}).Where("id = ?", userID).Update("is_online", false).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal logout"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
 func (h *AuthHandler) generateToken(userID uuid.UUID) (string, error) {
