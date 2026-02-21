@@ -50,6 +50,26 @@ export default function Dashboard() {
             }
         };
         fetchDashboardData();
+
+        // WebSocket for real-time updates
+        const token = localStorage.getItem('token');
+        const ws = new WebSocket(`ws://${window.location.hostname}:8080/api/v1/ws/admin`);
+
+        ws.onopen = () => {
+            // Need to authenticate if using protected route
+            // For now assuming the backend might need a token if it's in protected group
+            // Though HandleTopic is in protected group in main.go
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'balance_update' || data.type === 'session_update' || data.status) {
+                // Refresh stats on any significant update
+                fetchDashboardData();
+            }
+        };
+
+        return () => ws.close();
     }, []);
 
     if (loading) {
@@ -62,10 +82,28 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-6 sm:space-y-8 max-w-full overflow-x-hidden">
-            {/* Welcome Section */}
-            <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl font-bold break-words">Halo, Admin 👋</h1>
-                <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Berikut ringkasan performa sistem charging hari ini.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold break-words">Halo, Admin 👋</h1>
+                    <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Berikut ringkasan performa sistem charging hari ini.</p>
+                </div>
+                <button
+                    onClick={async () => {
+                        if (window.confirm('Apakah Anda yakin ingin MERESET seluruh data transaksi dan saldo? Tindakan ini tidak dapat dibatalkan.')) {
+                            try {
+                                await adminService.resetData();
+                                alert('Data berhasil direset!');
+                                window.location.reload();
+                            } catch (error) {
+                                alert('Gagal mereset data: ' + error.message);
+                            }
+                        }
+                    }}
+                    className="px-6 py-2.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 border border-orange-500/20 rounded-xl transition-all font-medium text-sm flex items-center gap-2 w-fit"
+                >
+                    <Zap className="w-4 h-4" />
+                    Reset Semua Data
+                </button>
             </div>
 
             {/* Stats Grid */}

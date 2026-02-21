@@ -19,10 +19,10 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func (h *WebSocketHandler) HandleSession(c *gin.Context) {
-	sessionID := c.Param("id")
-	if sessionID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Session ID required"})
+func (h *WebSocketHandler) HandleTopic(c *gin.Context) {
+	topic := c.Param("topic")
+	if topic == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Topic required"})
 		return
 	}
 
@@ -33,16 +33,17 @@ func (h *WebSocketHandler) HandleSession(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	// Subscribe to session updates
-	ch := h.Hub.Subscribe(sessionID)
-	defer h.Hub.Unsubscribe(sessionID, ch)
+	// Subscribe to topic updates
+	ch := h.Hub.Subscribe(topic)
+	defer h.Hub.Unsubscribe(topic, ch)
 
-	log.Printf("🔌 WebSocket client connected for session: %s", sessionID)
+	log.Printf("🔌 WebSocket client connected for topic: %s", topic)
 
 	// Send initial connection message
 	conn.WriteJSON(map[string]string{
 		"type":    "connected",
-		"message": "Terhubung ke sesi charging " + sessionID,
+		"topic":   topic,
+		"message": "Connected to " + topic,
 	})
 
 	// Read from channel and write to WebSocket

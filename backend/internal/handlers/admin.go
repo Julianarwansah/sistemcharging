@@ -55,3 +55,38 @@ func (h *AdminHandler) ListTransactions(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, sessions)
 }
+
+func (h *AdminHandler) ResetData(c *gin.Context) {
+	err := h.DB.Transaction(func(tx *gorm.DB) error {
+		// Truncate transaction tables
+		// Note: Using Raw SQL for TRUNCATE as GORM doesn't have a direct truncate method
+		if err := tx.Exec("TRUNCATE TABLE charging_sessions CASCADE").Error; err != nil {
+			return err
+		}
+		if err := tx.Exec("TRUNCATE TABLE payments CASCADE").Error; err != nil {
+			return err
+		}
+		if err := tx.Exec("TRUNCATE TABLE wallet_transactions CASCADE").Error; err != nil {
+			return err
+		}
+
+		// Reset all user balances
+		if err := tx.Model(&models.User{}).Where("1 = 1").Update("balance", 0).Error; err != nil {
+			return err
+		}
+
+		// Reset all connectors to available
+		if err := tx.Model(&models.Connector{}).Where("1 = 1").Update("status", "available").Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mereset data: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Seluruh data transaksi telah direset dan saldo dikembalikan ke 0"})
+}

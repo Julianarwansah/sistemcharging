@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 type PaymentHandler struct {
 	DB   *gorm.DB
 	MQTT *mqttclient.MQTTClient
+	Hub  *mqttclient.WebSocketHub
 }
 
 // DummyPay simulates a payment completion (for development)
@@ -67,6 +69,16 @@ func (h *PaymentHandler) DummyPay(c *gin.Context) {
 	// Update session to charging
 	session.Status = models.SessionCharging
 	h.DB.Save(&session)
+
+	// Broadcast session update
+	wsData, _ := json.Marshal(map[string]interface{}{
+		"session_id": session.ID,
+		"status":     session.Status,
+		"user_id":    session.UserID,
+	})
+	h.Hub.Broadcast(session.ID.String(), wsData)
+	h.Hub.Broadcast(session.UserID.String(), wsData)
+	h.Hub.Broadcast("admin", wsData)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Pembayaran berhasil! Charging dimulai.",

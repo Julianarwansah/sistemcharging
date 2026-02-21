@@ -10,7 +10,7 @@ export default function UsersPage() {
     const [showTopUpModal, setShowTopUpModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [topUpAmount, setTopUpAmount] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [roleFilter, setRoleFilter] = useState('user'); // Default to users/customers
 
     useEffect(() => {
         fetchUsers();
@@ -57,7 +57,11 @@ export default function UsersPage() {
             (statusFilter === 'online' && user.is_online) ||
             (statusFilter === 'offline' && !user.is_online);
 
-        return matchesSearch && matchesStatus;
+        const matchesRole =
+            roleFilter === 'all' ||
+            user.role === roleFilter;
+
+        return matchesSearch && matchesStatus && matchesRole;
     });
 
     if (loading) {
@@ -79,6 +83,29 @@ export default function UsersPage() {
                     <UserPlus className="w-5 h-5" />
                     Tambah Pengguna
                 </button>
+            </div>
+
+            {/* Role Tabs */}
+            <div className="flex p-1.5 bg-white/5 border border-white/5 rounded-2xl w-fit">
+                {[
+                    { id: 'user', label: 'Pelanggan', count: users.filter(u => u.role === 'user').length },
+                    { id: 'admin', label: 'Administrator', count: users.filter(u => u.role === 'admin').length },
+                    { id: 'all', label: 'Semua', count: users.length }
+                ].map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setRoleFilter(tab.id)}
+                        className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${roleFilter === tab.id
+                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                            : 'text-white/40 hover:text-white/60 hover:bg-white/5'
+                            }`}
+                    >
+                        {tab.label}
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] ${roleFilter === tab.id ? 'bg-white/20' : 'bg-white/10'}`}>
+                            {tab.count}
+                        </span>
+                    </button>
+                ))}
             </div>
 
             {/* Filters Section */}

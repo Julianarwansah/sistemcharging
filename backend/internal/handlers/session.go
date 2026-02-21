@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 type SessionHandler struct {
 	DB   *gorm.DB
 	MQTT *mqttclient.MQTTClient
+	Hub  *mqttclient.WebSocketHub
 }
 
 type CreateSessionRequest struct {
@@ -208,6 +210,17 @@ func (h *SessionHandler) Stop(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyelesaikan sesi dan memotong saldo"})
 		return
 	}
+
+	// Broadcast balance update
+	var user models.User
+	h.DB.Select("balance").First(&user, "id = ?", userID)
+	balanceData, _ := json.Marshal(map[string]interface{}{
+		"type":    "balance_update",
+		"balance": user.Balance,
+		"user_id": userID,
+	})
+	h.Hub.Broadcast(userID.String(), balanceData)
+	h.Hub.Broadcast("admin", balanceData)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "Charging berhasil dihentikan",

@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'dart:convert';
+import 'dart:io';
+import '../config/app_config.dart';
 
 class AuthProvider extends ChangeNotifier {
   final ApiService _api = ApiService();
   User? _user;
   bool _isLoading = false;
   String? _error;
+  WebSocket? _socket;
 
   User? get user => _user;
   bool get isLoading => _isLoading;
@@ -24,10 +28,37 @@ class AuthProvider extends ChangeNotifier {
       if (data['id'] != null) {
         _user = User.fromJson(data);
         notifyListeners();
+        _initWebSocket();
         return true;
       }
     } catch (_) {}
     return false;
+  }
+
+  void _initWebSocket() {
+    if (_user == null || _socket != null) return;
+
+    final wsUrl =
+        AppConfig.apiUrl.replaceFirst('http', 'ws') + '/ws/${_user!.id}';
+    WebSocket.connect(wsUrl).then((socket) {
+      _socket = socket;
+      socket.listen(
+        (message) {
+          final data = jsonDecode(message);
+          if (data['type'] == 'balance_update') {
+            refreshProfile();
+          }
+        },
+        onDone: () {
+          _socket = null;
+          // Reconnect after delay
+          Future.delayed(const Duration(seconds: 5), _initWebSocket);
+        },
+        onError: (_) {
+          _socket = null;
+        },
+      );
+    });
   }
 
   Future<void> refreshProfile() async {
@@ -168,6 +199,8 @@ class AuthProvider extends ChangeNotifier {
     } catch (_) {}
     await _api.clearToken();
     _user = null;
+    _socket?.close();
+    _socket = null;
     notifyListeners();
   }
 }

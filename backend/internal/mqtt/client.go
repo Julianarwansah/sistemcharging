@@ -32,34 +32,34 @@ type ChargerCommand struct {
 }
 
 type WebSocketHub struct {
-	Sessions map[string][]chan []byte
+	Topics map[string][]chan []byte
 }
 
 func NewWebSocketHub() *WebSocketHub {
 	return &WebSocketHub{
-		Sessions: make(map[string][]chan []byte),
+		Topics: make(map[string][]chan []byte),
 	}
 }
 
-func (h *WebSocketHub) Subscribe(sessionID string) chan []byte {
+func (h *WebSocketHub) Subscribe(topic string) chan []byte {
 	ch := make(chan []byte, 10)
-	h.Sessions[sessionID] = append(h.Sessions[sessionID], ch)
+	h.Topics[topic] = append(h.Topics[topic], ch)
 	return ch
 }
 
-func (h *WebSocketHub) Unsubscribe(sessionID string, ch chan []byte) {
-	channels := h.Sessions[sessionID]
+func (h *WebSocketHub) Unsubscribe(topic string, ch chan []byte) {
+	channels := h.Topics[topic]
 	for i, c := range channels {
 		if c == ch {
-			h.Sessions[sessionID] = append(channels[:i], channels[i+1:]...)
+			h.Topics[topic] = append(channels[:i], channels[i+1:]...)
 			close(ch)
 			break
 		}
 	}
 }
 
-func (h *WebSocketHub) Broadcast(sessionID string, data []byte) {
-	for _, ch := range h.Sessions[sessionID] {
+func (h *WebSocketHub) Broadcast(topic string, data []byte) {
+	for _, ch := range h.Topics[topic] {
 		select {
 		case ch <- data:
 		default:

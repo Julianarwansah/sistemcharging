@@ -55,10 +55,10 @@ func main() {
 		GoogleClientID: cfg.GoogleClientID,
 	}
 	stationHandler := &handlers.StationHandler{DB: db}
-	sessionHandler := &handlers.SessionHandler{DB: db, MQTT: mqttClient}
-	paymentHandler := &handlers.PaymentHandler{DB: db, MQTT: mqttClient}
+	sessionHandler := &handlers.SessionHandler{DB: db, MQTT: mqttClient, Hub: wsHub}
+	paymentHandler := &handlers.PaymentHandler{DB: db, MQTT: mqttClient, Hub: wsHub}
 	adminHandler := &handlers.AdminHandler{DB: db}
-	walletHandler := &handlers.WalletHandler{DB: db}
+	walletHandler := &handlers.WalletHandler{DB: db, Hub: wsHub}
 	wsHandler := &handlers.WebSocketHandler{Hub: wsHub}
 
 	// API routes
@@ -112,7 +112,7 @@ func main() {
 			protected.POST("/admin/wallet/topup", walletHandler.AdminTopUp)
 
 			// WebSocket
-			protected.GET("/ws/session/:id", wsHandler.HandleSession)
+			protected.GET("/ws/:topic", wsHandler.HandleTopic)
 		}
 	}
 
