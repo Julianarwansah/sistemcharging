@@ -55,21 +55,21 @@ const transactions = [
 
 export default function Transactions() {
     return (
-        <div className="space-y-8">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold">Riwayat Transaksi</h1>
-                    <p className="text-white/50 mt-1">Daftar semua sesi charging dan pembayaran pengguna.</p>
+        <div className="space-y-6 sm:space-y-8 max-w-full overflow-x-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div className="min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold break-words">Riwayat Transaksi</h1>
+                    <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Daftar semua sesi charging dan pembayaran pengguna.</p>
                 </div>
-                <button className="bg-white/5 border border-white/10 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-white/10 transition-all">
+                <button className="bg-white/5 border border-white/10 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all w-full sm:w-auto shrink-0">
                     <Download className="w-5 h-5" />
                     Ekspor Laporan
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div className="relative col-span-1 md:col-span-2 lg:col-span-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="relative sm:col-span-2 lg:col-span-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
                     <input
                         type="text"
@@ -98,54 +98,56 @@ export default function Transactions() {
 
             {/* Transactions Table */}
             <div className="glass rounded-3xl overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="border-b border-white/5 bg-white/[0.02]">
-                            <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">ID & User</th>
-                            <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Stasiun & Konektor</th>
-                            <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Energi & Biaya</th>
-                            <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Waktu</th>
-                            <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Status</th>
-                            <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30"></th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                        {transactions.map((trx) => (
-                            <tr key={trx.id} className="hover:bg-white/[0.01] transition-colors group">
-                                <td className="px-8 py-6">
-                                    <p className="font-bold text-sm">{trx.id}</p>
-                                    <p className="text-xs text-white/40 mt-1">{trx.user}</p>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <p className="font-bold text-sm">{trx.station}</p>
-                                    <p className="text-xs text-white/40 mt-1">{trx.connector}</p>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <p className="font-bold text-sm text-primary">{trx.amount}</p>
-                                    <p className="text-xs text-white/40 mt-1">{trx.energy}</p>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <p className="text-sm font-medium">{trx.date}</p>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <div className={`flex items-center gap-2 text-xs font-bold ${trx.status === 'Success' ? 'text-primary' :
-                                            trx.status === 'Ongoing' ? 'text-blue-400' : 'text-red-400'
-                                        }`}>
-                                        {trx.status === 'Success' && <CheckCircle2 className="w-4 h-4" />}
-                                        {trx.status === 'Ongoing' && <Clock className="w-4 h-4 animate-pulse" />}
-                                        {trx.status === 'Failed' && <XCircle className="w-4 h-4" />}
-                                        {trx.status}
-                                    </div>
-                                </td>
-                                <td className="px-8 py-6 text-right">
-                                    <button className="p-2 bg-white/5 rounded-lg text-white/40 group-hover:text-white group-hover:bg-primary transition-all">
-                                        <ArrowRight className="w-4 h-4" />
-                                    </button>
-                                </td>
+                <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr className="border-b border-white/5 bg-white/[0.02]">
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">ID & User</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Stasiun & Konektor</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Energi & Biaya</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Waktu</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Status</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30"></th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {transactions.map((trx) => (
+                                <tr key={trx.id} className="hover:bg-white/[0.01] transition-colors group">
+                                    <td className="px-8 py-6">
+                                        <p className="font-bold text-sm">{trx.id}</p>
+                                        <p className="text-xs text-white/40 mt-1">{trx.user}</p>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <p className="font-bold text-sm">{trx.station}</p>
+                                        <p className="text-xs text-white/40 mt-1">{trx.connector}</p>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <p className="font-bold text-sm text-primary">{trx.amount}</p>
+                                        <p className="text-xs text-white/40 mt-1">{trx.energy}</p>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <p className="text-sm font-medium">{trx.date}</p>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className={`flex items-center gap-2 text-xs font-bold ${trx.status === 'Success' ? 'text-primary' :
+                                            trx.status === 'Ongoing' ? 'text-blue-400' : 'text-red-400'
+                                            }`}>
+                                            {trx.status === 'Success' && <CheckCircle2 className="w-4 h-4" />}
+                                            {trx.status === 'Ongoing' && <Clock className="w-4 h-4 animate-pulse" />}
+                                            {trx.status === 'Failed' && <XCircle className="w-4 h-4" />}
+                                            {trx.status}
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-right">
+                                        <button className="p-2 bg-white/5 rounded-lg text-white/40 group-hover:text-white group-hover:bg-primary transition-all">
+                                            <ArrowRight className="w-4 h-4" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
                 {/* Pagination placeholder */}
                 <div className="p-6 bg-white/[0.02] flex items-center justify-between">

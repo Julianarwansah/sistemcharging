@@ -3,10 +3,10 @@ import { Settings as SettingsIcon, Bell, Shield, Paintbrush, Globe } from 'lucid
 
 export default function SettingsPage() {
     return (
-        <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold">Pengaturan Sistem</h1>
-                <p className="text-white/50 mt-1">Konfigurasi parameter dan tampilan dashboard admin.</p>
+        <div className="space-y-6 sm:space-y-8 max-w-full overflow-x-hidden">
+            <div className="min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold break-words">Pengaturan Sistem</h1>
+                <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Konfigurasi parameter dan tampilan dashboard admin.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

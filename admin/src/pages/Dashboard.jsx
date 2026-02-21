@@ -29,11 +29,11 @@ const data = [
 
 export default function Dashboard() {
     return (
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8 max-w-full overflow-x-hidden">
             {/* Welcome Section */}
-            <div>
-                <h1 className="text-3xl font-bold">Halo, Admin 👋</h1>
-                <p className="text-white/50 mt-1">Berikut ringkasan performa sistem charging hari ini.</p>
+            <div className="min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold break-words">Halo, Admin 👋</h1>
+                <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Berikut ringkasan performa sistem charging hari ini.</p>
             </div>
 
             {/* Stats Grid */}
@@ -72,17 +72,17 @@ export default function Dashboard() {
                 />
             </div>
 
-            {/* Chart Section */}
+            {/* Chart & Popular Stations Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 glass rounded-3xl p-8">
-                    <div className="flex items-center justify-between mb-8">
+                <div className="lg:col-span-2 glass rounded-3xl p-4 lg:p-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                         <h3 className="text-xl font-bold">Tren Transaksi</h3>
-                        <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+                        <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm focus:outline-none w-full sm:w-auto">
                             <option>7 Hari Terakhir</option>
                             <option>30 Hari Terakhir</option>
                         </select>
                     </div>
-                    <div className="h-[300px] w-full">
+                    <div className="h-[250px] sm:h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={data}>
                                 <defs>
@@ -96,13 +96,13 @@ export default function Dashboard() {
                                     dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#ffffff60', fontSize: 12 }}
+                                    tick={{ fill: '#ffffff60', fontSize: 10 }}
                                     dy={10}
                                 />
                                 <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#ffffff60', fontSize: 12 }}
+                                    tick={{ fill: '#ffffff60', fontSize: 10 }}
                                     tickFormatter={(value) => `Rp${value / 1000}k`}
                                 />
                                 <Tooltip
@@ -110,7 +110,8 @@ export default function Dashboard() {
                                         backgroundColor: '#1B263B',
                                         border: '1px solid #ffffff10',
                                         borderRadius: '12px',
-                                        color: '#fff'
+                                        color: '#fff',
+                                        fontSize: '12px'
                                     }}
                                     itemStyle={{ color: '#00C853' }}
                                 />
@@ -127,8 +128,8 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Recent Activity Mini List */}
-                <div className="glass rounded-3xl p-8">
+                {/* Popular Stations Section */}
+                <div className="glass rounded-3xl p-6 lg:p-8">
                     <h3 className="text-xl font-bold mb-6">Stasiun Populer</h3>
                     <div className="space-y-6">
                         <PopularStation name="Pakuwon Mall Station" uses="142" income="Rp 2.100.000" />
@@ -136,7 +137,7 @@ export default function Dashboard() {
                         <PopularStation name="Galaxy Mall 3 P2" uses="76" income="Rp 1.100.000" />
                         <PopularStation name="Grand City Station" uses="54" income="Rp 850.000" />
                     </div>
-                    <button className="w-full mt-8 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all">
+                    <button className="w-full mt-8 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm font-medium">
                         Lihat Semua Stasiun
                     </button>
                 </div>
