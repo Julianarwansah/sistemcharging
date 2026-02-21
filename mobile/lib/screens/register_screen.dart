@@ -118,8 +118,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           icon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Email wajib diisi';
+                            }
                             if (!v.contains('@')) return 'Email tidak valid';
                             return null;
                           },

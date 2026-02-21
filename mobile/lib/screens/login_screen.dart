@@ -26,12 +26,16 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.login(_emailCtrl.text, _passCtrl.text);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
 
-    if (success && mounted) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+    final success = await auth.login(_emailCtrl.text, _passCtrl.text);
+    if (!mounted) return;
+
+    if (success) {
+      navigator.pushReplacementNamed('/home');
+    } else {
+      messenger.showSnackBar(
         SnackBar(
           content: Text(auth.error ?? 'Login gagal'),
           backgroundColor: Colors.redAccent,
@@ -103,8 +107,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Email wajib diisi';
+                            }
                             if (!v.contains('@')) return 'Email tidak valid';
                             return null;
                           },
@@ -169,6 +174,98 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Divider
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Divider(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          thickness: 1,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'atau',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Divider(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          thickness: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Google Login Button
+                  Consumer<AuthProvider>(
+                    builder: (_, auth, __) => SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: auth.isLoading
+                            ? null
+                            : () async {
+                                final navigator = Navigator.of(context);
+                                final messenger = ScaffoldMessenger.of(context);
+
+                                final success = await auth.loginWithGoogle();
+                                if (!mounted) return;
+
+                                if (success) {
+                                  navigator.pushReplacementNamed('/home');
+                                } else if (auth.error != null) {
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text(auth.error!),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                }
+                              },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.network(
+                              'https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg',
+                              width: 20,
+                              height: 20,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.login,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Masuk dengan Google',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

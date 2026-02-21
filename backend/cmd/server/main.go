@@ -48,7 +48,12 @@ func main() {
 	})
 
 	// Initialize handlers
-	authHandler := &handlers.AuthHandler{DB: db, JWTSecret: cfg.JWTSecret, JWTExpiry: cfg.JWTExpiryHrs}
+	authHandler := &handlers.AuthHandler{
+		DB:             db,
+		JWTSecret:      cfg.JWTSecret,
+		JWTExpiry:      cfg.JWTExpiryHrs,
+		GoogleClientID: cfg.GoogleClientID,
+	}
 	stationHandler := &handlers.StationHandler{DB: db}
 	sessionHandler := &handlers.SessionHandler{DB: db, MQTT: mqttClient}
 	paymentHandler := &handlers.PaymentHandler{DB: db, MQTT: mqttClient}
@@ -62,6 +67,7 @@ func main() {
 		{
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
+			auth.POST("/google", authHandler.GoogleLogin)
 		}
 
 		// Payment callback (public)

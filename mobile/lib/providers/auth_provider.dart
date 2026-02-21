@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthProvider extends ChangeNotifier {
   final ApiService _api = ApiService();
@@ -75,6 +76,53 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _error = 'Tidak dapat terhubung ke server';
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> loginWithGoogle() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        serverClientId:
+            '528933132584-c15hlcdttk6a2lc4vs8iueq84hjkj7aq.apps.googleusercontent.com',
+      );
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        _error = 'Gagal mendapatkan token Google';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final data = await _api.googleLogin(idToken);
+      if (data['statusCode'] == 200) {
+        _user = User.fromJson(data['user']);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _error = data['error'] ?? 'Login Google gagal';
+      }
+    } catch (e) {
+      _error = 'Kesalahan saat login Google: $e';
     }
 
     _isLoading = false;

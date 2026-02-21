@@ -70,6 +70,19 @@ class ApiService {
     return {'statusCode': res.statusCode, ...data};
   }
 
+  Future<Map<String, dynamic>> googleLogin(String idToken) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiUrl}/auth/google'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'id_token': idToken}),
+    );
+    final data = jsonDecode(res.body);
+    if (res.statusCode == 200) {
+      await setToken(data['token']);
+    }
+    return {'statusCode': res.statusCode, ...data};
+  }
+
   Future<Map<String, dynamic>> getProfile() async {
     final res = await http.get(
       Uri.parse('${AppConfig.apiUrl}/auth/profile'),

@@ -22,6 +22,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
+      if (!mounted) return;
       Provider.of<SessionProvider>(context, listen: false).loadHistory();
     });
   }

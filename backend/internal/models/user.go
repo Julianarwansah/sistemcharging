@@ -12,7 +12,8 @@ type User struct {
 	Name         string         `gorm:"size:100;not null" json:"name"`
 	Email        string         `gorm:"size:100;uniqueIndex;not null" json:"email"`
 	Phone        string         `gorm:"size:20" json:"phone"`
-	PasswordHash string         `gorm:"size:255;not null" json:"-"`
+	PasswordHash string         `gorm:"size:255" json:"-"`
+	GoogleID     string         `gorm:"size:255;uniqueIndex" json:"-"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
