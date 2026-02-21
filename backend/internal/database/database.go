@@ -33,6 +33,7 @@ func Migrate() {
 		&models.Connector{},
 		&models.ChargingSession{},
 		&models.Payment{},
+		&models.WalletTransaction{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)

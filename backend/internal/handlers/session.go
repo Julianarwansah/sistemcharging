@@ -48,6 +48,25 @@ func (h *SessionHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Check user balance
+	var user models.User
+	if err := h.DB.First(&user, "id = ?", userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User tidak ditemukan"})
+		return
+	}
+
+	// Calculate estimated cost
+	estimatedCost := req.TargetKWH * connector.PricePerKWH
+
+	if user.Balance < estimatedCost {
+		c.JSON(http.StatusPaymentRequired, gin.H{
+			"error":   "Saldo tidak mencukupi",
+			"balance": user.Balance,
+			"needed":  estimatedCost,
+		})
+		return
+	}
+
 	// Check user doesn't have active session
 	var activeCount int64
 	h.DB.Model(&models.ChargingSession{}).
@@ -57,9 +76,6 @@ func (h *SessionHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "Anda masih memiliki sesi charging aktif"})
 		return
 	}
-
-	// Calculate estimated cost
-	estimatedCost := req.TargetKWH * connector.PricePerKWH
 
 	// Create session
 	session := models.ChargingSession{
@@ -151,16 +167,47 @@ func (h *SessionHandler) Stop(c *gin.Context) {
 		return
 	}
 
-	// Update session
-	now := time.Now()
-	session.Status = models.SessionCompleted
-	session.EndedAt = &now
-	session.TotalCost = session.EnergyKWH * session.Connector.PricePerKWH
-	h.DB.Save(&session)
+	// Update session and balance in transaction
+	err = h.DB.Transaction(func(tx *gorm.DB) error {
+		now := time.Now()
+		session.Status = models.SessionCompleted
+		session.EndedAt = &now
+		session.TotalCost = session.EnergyKWH * session.Connector.PricePerKWH
 
-	// Free connector
-	session.Connector.Status = models.ConnectorAvailable
-	h.DB.Save(&session.Connector)
+		if err := tx.Save(&session).Error; err != nil {
+			return err
+		}
+
+		// Deduct balance
+		if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("balance", gorm.Expr("balance - ?", session.TotalCost)).Error; err != nil {
+			return err
+		}
+
+		// Create transaction record
+		transaction := models.WalletTransaction{
+			UserID:          userID,
+			Amount:          session.TotalCost,
+			TransactionType: models.TransactionDeduction,
+			ReferenceID:     session.ID.String(),
+			Description:     "Pembayaran pengisian daya",
+		}
+		if err := tx.Create(&transaction).Error; err != nil {
+			return err
+		}
+
+		// Free connector
+		session.Connector.Status = models.ConnectorAvailable
+		if err := tx.Save(&session.Connector).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyelesaikan sesi dan memotong saldo"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "Charging berhasil dihentikan",

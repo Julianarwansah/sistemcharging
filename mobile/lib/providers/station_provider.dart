@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/station.dart';
 import '../services/api_service.dart';
@@ -7,14 +8,29 @@ class StationProvider extends ChangeNotifier {
   List<Station> _stations = [];
   Station? _selectedStation;
   bool _isLoading = false;
+  Timer? _pollingTimer;
 
   List<Station> get stations => _stations;
   Station? get selectedStation => _selectedStation;
   bool get isLoading => _isLoading;
 
-  Future<void> loadStations() async {
-    _isLoading = true;
-    notifyListeners();
+  void startPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      loadStations(silent: true);
+    });
+  }
+
+  void stopPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+  }
+
+  Future<void> loadStations({bool silent = false}) async {
+    if (!silent) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     try {
       final data = await _api.getStations();
@@ -53,5 +69,11 @@ class StationProvider extends ChangeNotifier {
   void clearSelection() {
     _selectedStation = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 }

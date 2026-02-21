@@ -15,6 +15,19 @@ import { adminService } from '../services/api';
 export default function Stations() {
     const [stations, setStations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        address: '',
+        latitude: '',
+        longitude: '',
+        qr_code: '',
+        connectors: [
+            { connector_type: 'Type 2', power_kw: 3.3, price_per_kwh: 2500 }
+        ]
+    });
+    const [editStation, setEditStation] = useState(null);
 
     useEffect(() => {
         fetchStations();
@@ -29,6 +42,94 @@ export default function Stations() {
             console.error('Error fetching stations:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id, name) => {
+        if (window.confirm(`Apakah Anda yakin ingin menghapus stasiun "${name}"?`)) {
+            try {
+                await adminService.deleteStation(id);
+                fetchStations();
+            } catch (error) {
+                console.error('Error deleting station:', error);
+                const errMsg = error.response?.data?.error || error.message || 'Silakan coba lagi.';
+                alert(`Gagal menghapus stasiun: ${errMsg}`);
+            }
+        }
+    };
+
+    const handleAddConnector = () => {
+        setFormData({
+            ...formData,
+            connectors: [...formData.connectors, { connector_type: 'Type 2', power_kw: 3.3, price_per_kwh: 2500 }]
+        });
+    };
+
+    const handleRemoveConnector = (index) => {
+        const newConnectors = formData.connectors.filter((_, i) => i !== index);
+        setFormData({ ...formData, connectors: newConnectors });
+    };
+
+    const handleConnectorChange = (index, field, value) => {
+        const newConnectors = [...formData.connectors];
+        newConnectors[index][field] = field === 'connector_type' ? value : parseFloat(value);
+        setFormData({ ...formData, connectors: newConnectors });
+    };
+
+    const handleEdit = (station) => {
+        setEditStation(station);
+        setFormData({
+            name: station.name,
+            address: station.address,
+            latitude: station.latitude,
+            longitude: station.longitude,
+            qr_code: station.qr_code,
+            connectors: station.connectors.map(c => ({
+                id: c.id,
+                connector_type: c.connector_type,
+                power_kw: c.power_kw,
+                price_per_kwh: c.price_per_kwh
+            }))
+        });
+        setShowModal(true);
+    };
+
+    const resetForm = () => {
+        setEditStation(null);
+        setFormData({
+            name: '',
+            address: '',
+            latitude: '',
+            longitude: '',
+            qr_code: '',
+            connectors: [{ connector_type: 'Type 2', power_kw: 3.3, price_per_kwh: 2500 }]
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const payload = {
+                ...formData,
+                latitude: parseFloat(formData.latitude),
+                longitude: parseFloat(formData.longitude)
+            };
+
+            if (editStation) {
+                await adminService.updateStation(editStation.id, payload);
+            } else {
+                await adminService.createStation(payload);
+            }
+
+            setShowModal(false);
+            resetForm();
+            fetchStations();
+        } catch (error) {
+            console.error('Error saving station:', error);
+            alert(`Gagal ${editStation ? 'memperbarui' : 'menambah'} stasiun: ` + (error.response?.data?.error || error.message));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -47,7 +148,13 @@ export default function Stations() {
                     <h1 className="text-2xl sm:text-3xl font-bold break-words leading-tight">Manajemen Stasiun</h1>
                     <p className="text-white/50 mt-1 text-xs sm:text-base break-words">Kelola data stasiun charging dan konektor.</p>
                 </div>
-                <button className="bg-primary text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all w-full sm:w-auto shrink-0">
+                <button
+                    onClick={() => {
+                        resetForm();
+                        setShowModal(true);
+                    }}
+                    className="bg-primary text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all w-full sm:w-auto shrink-0"
+                >
                     <Plus className="w-5 h-5" />
                     Tambah Stasiun
                 </button>
@@ -115,11 +222,17 @@ export default function Stations() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
-                                    <button className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all border border-white/5 lg:border-0 flex items-center justify-center">
+                                    <button
+                                        onClick={() => handleEdit(station)}
+                                        className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all border border-white/5 lg:border-0 flex items-center justify-center"
+                                    >
                                         <Edit2 className="w-4 sm:w-5 h-4 sm:h-5" />
                                         <span className="ml-2 lg:hidden text-xs sm:text-sm font-medium">Edit</span>
                                     </button>
-                                    <button className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-red-500/10 rounded-xl text-white/40 hover:text-red-500 transition-all border border-white/5 lg:border-0 flex items-center justify-center">
+                                    <button
+                                        onClick={() => handleDelete(station.id, station.name)}
+                                        className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-red-500/10 rounded-xl text-white/40 hover:text-red-500 transition-all border border-white/5 lg:border-0 flex items-center justify-center"
+                                    >
                                         <Trash2 className="w-4 sm:w-5 h-4 sm:h-5" />
                                         <span className="ml-2 lg:hidden text-xs sm:text-sm font-medium">Hapus</span>
                                     </button>
@@ -129,6 +242,155 @@ export default function Stations() {
                     </div>
                 ))}
             </div>
+
+            {/* Modal Tambah Stasiun */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
+                    <div className="glass rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-10 animate-in fade-in zoom-in duration-300">
+                        <div className="p-8">
+                            <h2 className="text-2xl font-bold mb-6">{editStation ? 'Edit Stasiun' : 'Tambah Stasiun Baru'}</h2>
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Nama Stasiun</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            value={formData.name}
+                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                            placeholder="Stasiun Sudirman"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">QR Code</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            value={formData.qr_code}
+                                            onChange={e => setFormData({ ...formData, qr_code: e.target.value })}
+                                            placeholder="STN-001"
+                                        />
+                                    </div>
+                                    <div className="sm:col-span-2 space-y-2">
+                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Alamat</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            value={formData.address}
+                                            onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                            placeholder="Jl. Sudirman No. 12"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Latitude</label>
+                                        <input
+                                            required
+                                            type="number"
+                                            step="any"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            value={formData.latitude}
+                                            onChange={e => setFormData({ ...formData, latitude: e.target.value })}
+                                            placeholder="-6.12345"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Longitude</label>
+                                        <input
+                                            required
+                                            type="number"
+                                            step="any"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            value={formData.longitude}
+                                            onChange={e => setFormData({ ...formData, longitude: e.target.value })}
+                                            placeholder="106.12345"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Konektor</label>
+                                        <button
+                                            type="button"
+                                            onClick={handleAddConnector}
+                                            className="text-primary text-xs font-bold flex items-center gap-1 hover:underline"
+                                        >
+                                            <Plus className="w-3 h-3" /> Tambah Konektor
+                                        </button>
+                                    </div>
+
+                                    {formData.connectors.map((conn, index) => (
+                                        <div key={index} className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-4">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs font-bold">Konektor #{index + 1}</span>
+                                                {formData.connectors.length > 1 && (
+                                                    <button type="button" onClick={() => handleRemoveConnector(index)} className="text-red-500/50 hover:text-red-500 transition-colors">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] text-white/30 uppercase font-bold">Tipe</label>
+                                                    <select
+                                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                                                        value={conn.connector_type}
+                                                        onChange={e => handleConnectorChange(index, 'connector_type', e.target.value)}
+                                                    >
+                                                        <option value="Type 2">Type 2</option>
+                                                        <option value="CCS">CCS</option>
+                                                        <option value="CHAdeMO">CHAdeMO</option>
+                                                    </select>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] text-white/30 uppercase font-bold">Daya (kW)</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.1"
+                                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                                                        value={conn.power_kw}
+                                                        onChange={e => handleConnectorChange(index, 'power_kw', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] text-white/30 uppercase font-bold">Harga/kWh</label>
+                                                    <input
+                                                        type="number"
+                                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                                                        value={conn.price_per_kwh}
+                                                        onChange={e => handleConnectorChange(index, 'price_per_kwh', e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowModal(false)}
+                                        className="flex-1 px-6 py-3 rounded-xl border border-white/10 font-bold hover:bg-white/5 transition-all"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="flex-1 bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                                    >
+                                        {isSubmitting ? 'Menyimpan...' : (editStation ? 'Update Stasiun' : 'Simpan Stasiun')}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

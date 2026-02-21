@@ -169,4 +169,17 @@ class ApiService {
     );
     return {'statusCode': res.statusCode, ...jsonDecode(res.body)};
   }
+
+  Future<Map<String, dynamic>?> post(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiUrl}$path'),
+      headers: await _headers(),
+      body: jsonEncode(body),
+    );
+    if (res.body.isEmpty) return null;
+    return jsonDecode(res.body);
+  }
 }

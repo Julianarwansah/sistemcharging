@@ -30,6 +30,12 @@ export const adminService = {
     getUsers: () => api.get('/admin/users'),
     getTransactions: () => api.get('/admin/transactions'),
     getStations: () => api.get('/stations'),
+    deleteStation: (id) => api.delete(`/stations/${id}`),
+    createStation: (data) => api.post('/stations', data),
+    updateStation: (id, data) => api.put(`/stations/${id}`, data),
+    getBalance: () => api.get('/wallet/balance'),
+    topUp: (amount) => api.post('/wallet/topup', { amount }),
+    adminTopUp: (userId, amount) => api.post('/admin/wallet/topup', { user_id: userId, amount }),
 };
 
 export default api;

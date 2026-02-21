@@ -16,6 +16,7 @@ type User struct {
 	GoogleID     string         `gorm:"size:255;uniqueIndex" json:"-"`
 	IsOnline     bool           `gorm:"default:false" json:"is_online"`
 	Role         string         `gorm:"size:20;default:'user'" json:"role"`
+	Balance      float64        `gorm:"type:decimal(15,2);default:0" json:"balance"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`

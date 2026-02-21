@@ -30,6 +30,38 @@ class AuthProvider extends ChangeNotifier {
     return false;
   }
 
+  Future<void> refreshProfile() async {
+    try {
+      final data = await _api.getProfile();
+      if (data['id'] != null) {
+        _user = User.fromJson(data);
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
+  Future<bool> topUp(double amount) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final data = await _api.post('/wallet/topup', {'amount': amount});
+      if (data != null && data['message'] != null) {
+        await refreshProfile();
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      _error = 'Top up gagal: $e';
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _error = null;

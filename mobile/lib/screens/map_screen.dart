@@ -18,6 +18,15 @@ class _StationMapScreenState extends State<StationMapScreen> {
   Station? _selectedStation;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (!mounted) return;
+      Provider.of<StationProvider>(context, listen: false).loadStations();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0D1B2A),

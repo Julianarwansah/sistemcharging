@@ -7,6 +7,10 @@ export default function UsersPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [showTopUpModal, setShowTopUpModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [topUpAmount, setTopUpAmount] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -20,6 +24,26 @@ export default function UsersPage() {
             console.error('Error fetching users:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleTopUp = async (e) => {
+        e.preventDefault();
+        if (!selectedUser || !topUpAmount) return;
+
+        setIsSubmitting(true);
+        try {
+            await adminService.adminTopUp(selectedUser.id, parseFloat(topUpAmount));
+            setShowTopUpModal(false);
+            setTopUpAmount('');
+            setSelectedUser(null);
+            fetchUsers();
+            alert('Top up berhasil!');
+        } catch (error) {
+            console.error('Error top up:', error);
+            alert('Gagal top up: ' + (error.response?.data?.error || error.message));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -89,9 +113,10 @@ export default function UsersPage() {
                             <tr className="border-b border-white/5 bg-white/[0.02]">
                                 <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Nama & Email</th>
                                 <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Telepon</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Saldo</th>
                                 <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Bergabung</th>
                                 <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Status</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30"></th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -104,6 +129,9 @@ export default function UsersPage() {
                                         </td>
                                         <td className="px-8 py-6 text-sm text-white/70">{user.phone || '-'}</td>
                                         <td className="px-8 py-6 text-sm text-white/70">
+                                            Rp {user.balance?.toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-8 py-6 text-sm text-white/70">
                                             {new Date(user.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
                                         </td>
                                         <td className="px-8 py-6">
@@ -113,9 +141,20 @@ export default function UsersPage() {
                                             </span>
                                         </td>
                                         <td className="px-8 py-6 text-right">
-                                            <button className="p-2 hover:bg-white/5 rounded-lg text-white/40 transition-all">
-                                                <MoreVertical className="w-5 h-5" />
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedUser(user);
+                                                        setShowTopUpModal(true);
+                                                    }}
+                                                    className="px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-bold uppercase rounded-lg hover:bg-primary/20 transition-all"
+                                                >
+                                                    Top Up
+                                                </button>
+                                                <button className="p-2 hover:bg-white/5 rounded-lg text-white/40 transition-all">
+                                                    <MoreVertical className="w-5 h-5" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -130,6 +169,51 @@ export default function UsersPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Top Up Modal */}
+            {showTopUpModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowTopUpModal(false)}></div>
+                    <div className="glass rounded-[2rem] w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-300">
+                        <div className="p-8">
+                            <h2 className="text-2xl font-bold mb-2">Top Up Saldo</h2>
+                            <p className="text-white/40 text-sm mb-6">Tambah saldo untuk {selectedUser?.name}</p>
+
+                            <form onSubmit={handleTopUp} className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Jumlah Saldo (Rp)</label>
+                                    <input
+                                        required
+                                        type="number"
+                                        min="1000"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                        value={topUpAmount}
+                                        onChange={e => setTopUpAmount(e.target.value)}
+                                        placeholder="Contoh: 50000"
+                                    />
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowTopUpModal(false)}
+                                        className="flex-1 px-6 py-3 rounded-xl border border-white/10 font-bold hover:bg-white/5 transition-all"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="flex-1 bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                                    >
+                                        {isSubmitting ? 'Memproses...' : 'Konfirmasi'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

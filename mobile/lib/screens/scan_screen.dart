@@ -115,6 +115,15 @@ class _ScanScreenState extends State<ScanScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => _showManualInputDialog(),
+                    icon: const Icon(
+                      Icons.keyboard_outlined,
+                      color: Colors.white,
+                    ),
+                    tooltip: 'Input Manual',
+                  ),
                 ],
               ),
             ),
@@ -150,6 +159,61 @@ class _ScanScreenState extends State<ScanScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showManualInputDialog() async {
+    final TextEditingController controller = TextEditingController();
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1B263B),
+          title: const Text(
+            'Input Manual QR Code',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: 'Masukkan kode stasiun (misal: STN-001)',
+              hintStyle: TextStyle(color: Colors.white38),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white24),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF00E676)),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Batal',
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00C853),
+              ),
+              onPressed: () {
+                final code = controller.text.trim();
+                Navigator.pop(context);
+                if (code.isNotEmpty) {
+                  _onDetect(
+                    BarcodeCapture(barcodes: [Barcode(rawValue: code)]),
+                  );
+                }
+              },
+              child: const Text('Cari', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
     );
   }
 }

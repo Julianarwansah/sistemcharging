@@ -3,6 +3,7 @@ class User {
   final String name;
   final String email;
   final String phone;
+  final double balance;
   final DateTime createdAt;
 
   User({
@@ -10,6 +11,7 @@ class User {
     required this.name,
     required this.email,
     required this.phone,
+    required this.balance,
     required this.createdAt,
   });
 
@@ -19,6 +21,7 @@ class User {
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
+      balance: (json['balance'] ?? 0).toDouble(),
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
     );
   }

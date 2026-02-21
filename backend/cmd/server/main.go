@@ -58,6 +58,7 @@ func main() {
 	sessionHandler := &handlers.SessionHandler{DB: db, MQTT: mqttClient}
 	paymentHandler := &handlers.PaymentHandler{DB: db, MQTT: mqttClient}
 	adminHandler := &handlers.AdminHandler{DB: db}
+	walletHandler := &handlers.WalletHandler{DB: db}
 	wsHandler := &handlers.WebSocketHandler{Hub: wsHub}
 
 	// API routes
@@ -95,12 +96,20 @@ func main() {
 			protected.GET("/stations", stationHandler.List)
 			protected.GET("/stations/:id", stationHandler.Get)
 			protected.GET("/stations/qr/:code", stationHandler.GetByQR)
+			protected.POST("/stations", stationHandler.Create)
+			protected.PUT("/stations/:id", stationHandler.Update)
+			protected.DELETE("/stations/:id", stationHandler.Delete)
 
 			// Sessions
 			protected.POST("/sessions", sessionHandler.Create)
 			protected.GET("/sessions/:id", sessionHandler.Get)
 			protected.POST("/sessions/:id/stop", sessionHandler.Stop)
 			protected.GET("/sessions/history", sessionHandler.History)
+
+			// Wallet
+			protected.GET("/wallet/balance", walletHandler.GetBalance)
+			protected.POST("/wallet/topup", walletHandler.TopUp)
+			protected.POST("/admin/wallet/topup", walletHandler.AdminTopUp)
 
 			// WebSocket
 			protected.GET("/ws/session/:id", wsHandler.HandleSession)

@@ -16,8 +16,16 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     Future.microtask(() {
       if (!mounted) return;
-      Provider.of<StationProvider>(context, listen: false).loadStations();
+      final sp = Provider.of<StationProvider>(context, listen: false);
+      sp.loadStations();
+      sp.startPolling();
     });
+  }
+
+  @override
+  void dispose() {
+    Provider.of<StationProvider>(context, listen: false).stopPolling();
+    super.dispose();
   }
 
   @override
@@ -87,6 +95,64 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+
+            // Balance Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Saldo Kamu',
+                          style: TextStyle(fontSize: 12, color: Colors.white70),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Rp ${auth.user?.balance.toStringAsFixed(0).replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.") ?? "0"}',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    ElevatedButton.icon(
+                      onPressed: () => Navigator.pushNamed(context, '/topup'),
+                      icon: const Icon(
+                        Icons.add_circle_outline_rounded,
+                        size: 20,
+                      ),
+                      label: const Text('Top Up'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00E676),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
 
             // Scan QR button
             Padding(
@@ -239,88 +305,95 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   }
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: sp.stations.length,
-                    itemBuilder: (_, i) {
-                      final station = sp.stations[i];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.06),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.08),
-                          ),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16),
-                          leading: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: const Color(
-                                0xFF00C853,
-                              ).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Icon(
-                              Icons.ev_station_rounded,
-                              color: Color(0xFF00E676),
+                  return RefreshIndicator(
+                    onRefresh: () => sp.loadStations(),
+                    color: const Color(0xFF00E676),
+                    backgroundColor: const Color(0xFF1B263B),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: sp.stations.length,
+                      itemBuilder: (_, i) {
+                        final station = sp.stations[i];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.08),
                             ),
                           ),
-                          title: Text(
-                            station.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(16),
+                            leading: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF00C853,
+                                ).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.ev_station_rounded,
+                                color: Color(0xFF00E676),
+                              ),
                             ),
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  station.address,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.5),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    _statusBadge(station.status),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '${station.connectors.length} connector',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                        fontSize: 12,
+                            title: Text(
+                              station.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    station.address,
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.5,
                                       ),
+                                      fontSize: 12,
                                     ),
-                                  ],
-                                ),
-                              ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      _statusBadge(station.status),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '${station.connectors.length} connector',
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.4,
+                                          ),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
+                            trailing: const Icon(
+                              Icons.chevron_right_rounded,
+                              color: Colors.white38,
+                            ),
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/station',
+                                arguments: station,
+                              );
+                            },
                           ),
-                          trailing: const Icon(
-                            Icons.chevron_right_rounded,
-                            color: Colors.white38,
-                          ),
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/station',
-                              arguments: station,
-                            );
-                          },
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   );
                 },
               ),
