@@ -102,8 +102,10 @@ class _ChargingScreenState extends State<ChargingScreen>
       ),
     );
 
-    if (confirm == true) {
+    if (confirm == true && mounted) {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
       await sp.stopSession(sp.activeSession!.id);
+      await auth.refreshProfile();
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }

@@ -88,13 +88,52 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
               child: Column(
                 children: [
-                  Text(
-                    '${_targetKWH.toStringAsFixed(1)} kWh',
-                    style: const TextStyle(
-                      color: Color(0xFF00E676),
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${_targetKWH.toStringAsFixed(1)} kWh',
+                        style: const TextStyle(
+                          color: Color(0xFF00E676),
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (_targetKWH >=
+                              (Provider.of<AuthProvider>(
+                                        context,
+                                        listen: false,
+                                      ).user?.balance ??
+                                      0) /
+                                  connector.pricePerKWH &&
+                          _targetKWH > 0.5)
+                        Container(
+                          margin: const EdgeInsets.only(left: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF00E676,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(
+                                0xFF00E676,
+                              ).withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: const Text(
+                            'MAX',
+                            style: TextStyle(
+                              color: Color(0xFF00E676),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 10),
                   Slider(
@@ -124,6 +163,38 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(color: Colors.white10),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        final balance =
+                            Provider.of<AuthProvider>(
+                              context,
+                              listen: false,
+                            ).user?.balance ??
+                            0;
+                        final maxKwh = balance / connector.pricePerKWH;
+                        setState(() {
+                          // Cap at 20 (max slider) but let it go lower if balance is limited
+                          _targetKWH = maxKwh > 20.0 ? 20.0 : maxKwh;
+                          if (_targetKWH < 0.5) _targetKWH = 0.5;
+                        });
+                      },
+                      icon: const Icon(Icons.flash_on_rounded, size: 18),
+                      label: const Text('Isi Penuh (Sesuai Saldo)'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF00E676),
+                        side: const BorderSide(color: Color(0xFF00C853)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
                   ),
                 ],
               ),

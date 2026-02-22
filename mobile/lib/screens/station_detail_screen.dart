@@ -101,10 +101,11 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Row(
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
                     children: [
                       _infoBadge(Icons.qr_code, station.qrCode),
-                      const SizedBox(width: 10),
                       _infoBadge(
                         Icons.circle,
                         station.status == 'active' ? 'Aktif' : 'Offline',
@@ -112,14 +113,16 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
                             ? const Color(0xFF00E676)
                             : Colors.orange,
                       ),
-                      const SizedBox(width: 10),
                       InkWell(
                         onTap: () async {
                           final url = Uri.parse(
                             'https://www.google.com/maps/search/?api=1&query=${station.latitude},${station.longitude}',
                           );
                           if (await canLaunchUrl(url)) {
-                            await launchUrl(url);
+                            await launchUrl(
+                              url,
+                              mode: LaunchMode.externalApplication,
+                            );
                           }
                         },
                         borderRadius: BorderRadius.circular(8),

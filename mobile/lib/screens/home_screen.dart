@@ -22,6 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final sp = Provider.of<StationProvider>(context, listen: false);
       sp.loadStations();
       sp.startPolling();
+      // Refresh balance every time user enters Home
+      Provider.of<AuthProvider>(context, listen: false).refreshProfile();
     });
   }
 
@@ -263,12 +265,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const Spacer(),
-                  Consumer<StationProvider>(
-                    builder: (_, sp, __) => Text(
-                      '${sp.stations.length} stasiun',
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/stations_list'),
+                    child: const Text(
+                      'Lihat Semua',
                       style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: Color(0xFF00E676),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),

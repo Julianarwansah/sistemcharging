@@ -132,6 +132,11 @@ func (mc *MQTTClient) subscribeToChargerStatus() {
 		session.PowerKW = status.PowerKW
 		session.Progress = status.Progress
 
+		// Fetch connector to get price if needed for real-time cost
+		var connector models.Connector
+		mc.db.First(&connector, "id = ?", session.ConnectorID)
+		session.TotalCost = status.EnergyKWH * connector.PricePerKWH
+
 		switch status.Status {
 		case "charging":
 			session.Status = models.SessionCharging

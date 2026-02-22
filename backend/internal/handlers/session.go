@@ -176,7 +176,17 @@ func (h *SessionHandler) Stop(c *gin.Context) {
 		session.EndedAt = &now
 		session.TotalCost = session.EnergyKWH * session.Connector.PricePerKWH
 
+		// Update session and balance in transaction
 		if err := tx.Save(&session).Error; err != nil {
+			return err
+		}
+
+		// Update payment record with final cost
+		if err := tx.Model(&models.Payment{}).Where("session_id = ?", session.ID).
+			Updates(map[string]interface{}{
+				"amount": session.TotalCost,
+				"status": models.PaymentSuccess,
+			}).Error; err != nil {
 			return err
 		}
 
