@@ -53,11 +53,29 @@ Langkah-langkah bagi pemilik motor listrik untuk melakukan pengisian daya.
 
 ---
 
-## 3. Penyelesaian Masalah (Troubleshooting)
-- **Koneksi Gagal**: Pastikan internet aktif. Jika dashboard admin tidak update, pastikan service Backend (Go) sedang berjalan.
-- **Simulator IoT**: Jika ingin mencoba simulasi tanpa mesin asli, jalankan `go run simulator.go` di folder `iot-simulator`.
+## 3. Detail Teknis & Simulasi (IoT Simulator)
+Sistem ini menggunakan simulator berbasis Go untuk meniru perilaku hardware pengisian daya di lapangan.
+
+### A. Cara Kerja Simulator
+1. **MQTT Communication**: Simulator terhubung ke broker MQTT (localhost:1883).
+2. **Command Handling**: Simulator mendengarkan perintah `START` dan `STOP` dari backend.
+3. **Progres Real-time**: Saat menerima perintah `START`, simulator akan mengirimkan update penggunaan energi (kWh) dan persentase baterai setiap 3 detik secara otomatis ke backend.
+4. **Sinkronisasi Target**: Simulator sekarang mendukung sinkronisasi `Target kWh` yang dipilih pengguna di aplikasi mobile.
+
+### B. Menjalankan Simulasi
+1. Buka terminal baru.
+2. Masuk ke folder simulator: `cd iot-simulator`.
+3. Jalankan: `go run simulator.go`.
+4. Perhatikan log di terminal untuk melihat aktivitas "Charging..." saat sesi dimulai dari aplikasi mobile.
+
+---
+
+## 4. Penyelesaian Masalah (Troubleshooting)
+- **Koneksi Gagal**: Pastikan broker MQTT (Mosquitto/emqx) sudah menyala di background.
+- **Admin Dashboard Tidak Refresh**: Pastikan koneksi internet stabil dan service Backend (Go) sudah direstart setelah perubahan kode terbaru.
+- **Data Tidak Masuk**: Cek `CHARGER_ID` di simulator (default: `simulator-001`) harus sesuai dengan `MQTT Topic` yang didaftarkan di dashboard admin (format topic: `charger/simulator-001`).
 
 ---
 
 > [!IMPORTANT]
-> Sistem ini dikembangkan untuk memberikan kemudahan bagi ekosistem kendaraan listrik di Indonesia. Gunakan fitur **Monitoring** untuk menjaga efisiensi alat.
+> Sistem ini dikembangkan untuk memberikan kemudahan bagi ekosistem kendaraan listrik di Indonesia. Gunakan fitur **Monitoring** di dashboard admin untuk menjaga efisiensi alat.

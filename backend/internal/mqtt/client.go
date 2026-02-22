@@ -27,8 +27,9 @@ type ChargerStatus struct {
 }
 
 type ChargerCommand struct {
-	Action    string `json:"action"`
-	SessionID string `json:"session_id"`
+	Action    string  `json:"action"`
+	SessionID string  `json:"session_id"`
+	TargetKWH float64 `json:"target_kwh"`
 }
 
 type WebSocketHub struct {

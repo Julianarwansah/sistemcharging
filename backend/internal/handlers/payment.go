@@ -57,6 +57,7 @@ func (h *PaymentHandler) DummyPay(c *gin.Context) {
 	err = h.MQTT.SendCommand(session.Connector.MQTTTopic, mqttclient.ChargerCommand{
 		Action:    "START",
 		SessionID: session.ID.String(),
+		TargetKWH: session.TargetKWH,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

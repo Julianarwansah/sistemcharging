@@ -15,8 +15,9 @@ import (
 )
 
 type ChargerCommand struct {
-	Action    string `json:"action"`
-	SessionID string `json:"session_id"`
+	Action    string  `json:"action"`
+	SessionID string  `json:"session_id"`
+	TargetKWH float64 `json:"target_kwh"`
 }
 
 type ChargerStatus struct {
@@ -95,7 +96,7 @@ func (s *ChargerSimulator) subscribe() {
 
 		switch cmd.Action {
 		case "START":
-			s.startCharging(cmd.SessionID, msg.Topic())
+			s.startCharging(cmd.SessionID, cmd.TargetKWH)
 		case "STOP":
 			s.stopCharging()
 		}
@@ -104,7 +105,7 @@ func (s *ChargerSimulator) subscribe() {
 	log.Printf("📡 Subscribed to: %s", topic)
 }
 
-func (s *ChargerSimulator) startCharging(sessionID string, commandTopic string) {
+func (s *ChargerSimulator) startCharging(sessionID string, targetKWH float64) {
 	if s.charging {
 		log.Println("⚠️  Already charging!")
 		return
@@ -113,8 +114,12 @@ func (s *ChargerSimulator) startCharging(sessionID string, commandTopic string) 
 	s.charging = true
 	s.sessionID = sessionID
 	s.energyKWH = 0
+	s.targetKWH = targetKWH
+	if s.targetKWH <= 0 {
+		s.targetKWH = 5.0 // Fallback
+	}
 
-	log.Printf("⚡ Starting charging session: %s", sessionID)
+	log.Printf("⚡ Starting charging session: %s (Target: %.2f kWh)", sessionID, targetKWH)
 
 	// Derive the status topic from command topic
 	// e.g., "charger/{stationID}/connector1/command" → "charger/{stationID}/connector1/status"
