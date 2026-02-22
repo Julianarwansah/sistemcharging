@@ -1,16 +1,27 @@
-# React + Vite
+---
+title: SistemCharging Admin
+emoji: 🔌
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# SistemCharging Admin Panel ⚡
 
-Currently, two official plugins are available:
+Dashboard admin untuk sistem charging motor listrik.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Environment Variables
 
-## React Compiler
+Set di Hugging Face Space Settings → Repository secrets:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_API_URL` | URL Backend API | `https://your-username-sistemcharging-backend.hf.space/api/v1` |
 
-## Expanding the ESLint configuration
+## Deploy ke Hugging Face
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Buat Space baru di Hugging Face (SDK: Docker)
+2. Push folder `admin/` sebagai root repo Space
+3. Set `VITE_API_URL` di Space Settings
