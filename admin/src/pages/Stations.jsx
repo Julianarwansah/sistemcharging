@@ -8,8 +8,13 @@ import {
     Edit2,
     Trash2,
     BatteryCharging,
-    Loader2
+    Loader2,
+    QrCode,
+    Printer,
+    Download,
+    X
 } from 'lucide-react';
+import QRCode from "react-qr-code";
 import { adminService } from '../services/api';
 
 export default function Stations() {
@@ -30,6 +35,8 @@ export default function Stations() {
         ]
     });
     const [editStation, setEditStation] = useState(null);
+    const [showQRModal, setShowQRModal] = useState(false);
+    const [selectedQRStation, setSelectedQRStation] = useState(null);
 
     useEffect(() => {
         fetchStations();
@@ -258,6 +265,17 @@ export default function Stations() {
                                     </div>
                                     <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
                                         <button
+                                            onClick={() => {
+                                                setSelectedQRStation(station);
+                                                setShowQRModal(true);
+                                            }}
+                                            className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-primary/10 rounded-xl text-primary/60 hover:text-primary transition-all border border-border lg:border-0 flex items-center justify-center"
+                                            title="Tampilkan QR Code"
+                                        >
+                                            <QrCode className="w-4 sm:w-5 h-4 sm:h-5" />
+                                            <span className="ml-2 lg:hidden text-xs sm:text-sm font-medium">QR Code</span>
+                                        </button>
+                                        <button
                                             onClick={() => handleEdit(station)}
                                             className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-foreground/5 rounded-xl text-foreground/40 hover:text-foreground transition-all border border-border lg:border-0 flex items-center justify-center"
                                         >
@@ -422,6 +440,51 @@ export default function Stations() {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* QR Code Modal */}
+            {showQRModal && selectedQRStation && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setShowQRModal(false)}></div>
+                    <div className="glass rounded-[2.5rem] w-full max-w-sm relative z-10 animate-in fade-in zoom-in duration-300 border border-primary/20">
+                        <button
+                            onClick={() => setShowQRModal(false)}
+                            className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="p-10 text-center">
+                            <div className="inline-flex p-4 rounded-3xl bg-primary/10 mb-6">
+                                <QrCode className="w-8 h-8 text-primary" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-2">{selectedQRStation.name}</h3>
+                            <p className="text-foreground/40 text-sm mb-8">Scan QR untuk mulai charging</p>
+
+                            <div className="bg-white p-6 rounded-3xl inline-block shadow-2xl shadow-primary/20 border-4 border-primary/10 mb-8">
+                                <QRCode
+                                    value={selectedQRStation.qr_code}
+                                    size={180}
+                                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                                    viewBox={`0 0 256 256`}
+                                    fgColor="#000000"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={() => window.print()}
+                                    className="w-full bg-primary text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                >
+                                    <Printer className="w-5 h-5" />
+                                    Cetak Stiker QR
+                                </button>
+                                <p className="text-[10px] text-foreground/20 uppercase font-black tracking-widest mt-2">
+                                    ID: {selectedQRStation.qr_code}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
