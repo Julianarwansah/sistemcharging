@@ -166,7 +166,7 @@ export default function UsersPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="min-w-0">
                     <h1 className="text-2xl sm:text-3xl font-bold break-words">Manajemen Pelanggan</h1>
-                    <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Daftar pelanggan terdaftar di sistem charging.</p>
+                    <p className="text-foreground/50 mt-1 text-sm sm:text-base break-words">Daftar pelanggan terdaftar di sistem charging.</p>
                 </div>
                 <button className="bg-primary text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all w-full sm:w-auto">
                     <UserPlus className="w-5 h-5" />
@@ -177,20 +177,20 @@ export default function UsersPage() {
             {/* Filters Section */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-2 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 w-5 h-5" />
                     <input
                         type="text"
                         placeholder="Cari nama atau email pelanggan..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-card border border-white/10 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-primary/50 transition-colors"
+                        className="w-full bg-card border border-border rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-primary/50 transition-colors"
                     />
                 </div>
                 <div className="relative">
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="w-full bg-card border border-white/10 rounded-2xl py-3 px-4 text-sm font-medium focus:outline-none appearance-none cursor-pointer"
+                        className="w-full bg-card border border-border rounded-2xl py-3 px-4 text-sm font-medium focus:outline-none appearance-none cursor-pointer"
                     >
                         <option value="all">Semua Status</option>
                         <option value="online">Online</option>
@@ -204,33 +204,33 @@ export default function UsersPage() {
                 <div className="overflow-x-auto no-scrollbar">
                     <table className="w-full text-left border-collapse min-w-[700px]">
                         <thead>
-                            <tr className="border-b border-white/5 bg-white/[0.02]">
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Nama & Email</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Telepon</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-right">Saldo</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-center">Bergabung</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-center">Status</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-right">Aksi</th>
+                            <tr className="border-b border-border bg-foreground/[0.02]">
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30">Nama & Email</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30">Telepon</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30 text-right">Saldo</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30 text-center">Bergabung</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30 text-center">Status</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30 text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-border">
                             {filteredUsers.length > 0 ? (
                                 filteredUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-white/[0.01] transition-colors">
+                                    <tr key={user.id} className="hover:bg-foreground/[0.01] transition-colors">
                                         <td className="px-8 py-6">
                                             <p className="font-bold text-sm">{user.name}</p>
-                                            <p className="text-xs text-white/40 mt-1">{user.email}</p>
+                                            <p className="text-xs text-foreground/40 mt-1">{user.email}</p>
                                         </td>
-                                        <td className="px-8 py-6 text-sm text-white/70">{user.phone || '-'}</td>
-                                        <td className="px-8 py-6 text-sm text-white/70 text-right font-mono">
+                                        <td className="px-8 py-6 text-sm text-foreground/70">{user.phone || '-'}</td>
+                                        <td className="px-8 py-6 text-sm text-foreground/70 text-right font-mono">
                                             Rp {user.balance?.toLocaleString('id-ID')}
                                         </td>
-                                        <td className="px-8 py-6 text-sm text-white/70 text-center">
+                                        <td className="px-8 py-6 text-sm text-foreground/70 text-center">
                                             {new Date(user.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
                                         </td>
                                         <td className="px-8 py-6 text-center">
                                             <div className="flex flex-col items-center gap-1">
-                                                <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${user.is_online ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white/40'
+                                                <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${user.is_online ? 'bg-primary/10 text-primary' : 'bg-foreground/10 text-foreground/40'
                                                     }`}>
                                                     {user.is_online ? 'Online' : 'Offline'}
                                                 </span>
@@ -257,22 +257,22 @@ export default function UsersPage() {
                                                         e.stopPropagation();
                                                         setDropdownId(dropdownId === user.id ? null : user.id);
                                                     }}
-                                                    className="p-2 hover:bg-white/5 rounded-lg text-white/40 transition-all"
+                                                    className="p-2 hover:bg-foreground/5 rounded-lg text-foreground/40 transition-all"
                                                 >
                                                     <MoreVertical className="w-5 h-5" />
                                                 </button>
 
                                                 {dropdownId === user.id && (
-                                                    <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                                    <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                                         <button
                                                             onClick={() => fetchHistory(user)}
-                                                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 transition-colors"
+                                                            className="w-full text-left px-4 py-2 text-sm hover:bg-foreground/5 transition-colors"
                                                         >
                                                             Lihat Riwayat
                                                         </button>
                                                         <button
                                                             onClick={() => openEditModal(user)}
-                                                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 transition-colors"
+                                                            className="w-full text-left px-4 py-2 text-sm hover:bg-foreground/5 transition-colors"
                                                         >
                                                             Ubah Data
                                                         </button>
@@ -305,7 +305,7 @@ export default function UsersPage() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="5" className="px-8 py-12 text-center text-white/30 text-sm">
+                                    <td colSpan="5" className="px-8 py-12 text-center text-foreground/30 text-sm">
                                         Tidak ada pengguna yang ditemukan.
                                     </td>
                                 </tr>
@@ -322,16 +322,16 @@ export default function UsersPage() {
                     <div className="glass rounded-[2rem] w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-300">
                         <div className="p-8">
                             <h2 className="text-2xl font-bold mb-2">Top Up Saldo</h2>
-                            <p className="text-white/40 text-sm mb-6">Tambah saldo untuk {selectedUser?.name}</p>
+                            <p className="text-foreground/40 text-sm mb-6">Tambah saldo untuk {selectedUser?.name}</p>
 
                             <form onSubmit={handleTopUp} className="space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Jumlah Saldo (Rp)</label>
+                                    <label className="text-xs font-bold text-foreground/40 uppercase tracking-widest">Jumlah Saldo (Rp)</label>
                                     <input
                                         required
                                         type="number"
                                         min="1000"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                        className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
                                         value={topUpAmount}
                                         onChange={e => setTopUpAmount(e.target.value)}
                                         placeholder="Contoh: 50000"
@@ -342,7 +342,7 @@ export default function UsersPage() {
                                     <button
                                         type="button"
                                         onClick={() => setShowTopUpModal(false)}
-                                        className="flex-1 px-6 py-3 rounded-xl border border-white/10 font-bold hover:bg-white/5 transition-all"
+                                        className="flex-1 px-6 py-3 rounded-xl border border-border font-bold hover:bg-foreground/5 transition-all"
                                     >
                                         Batal
                                     </button>
@@ -367,34 +367,34 @@ export default function UsersPage() {
                     <div className="glass rounded-[2rem] w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-300">
                         <div className="p-8">
                             <h2 className="text-2xl font-bold mb-2">Ubah Data Pelanggan</h2>
-                            <p className="text-white/40 text-sm mb-6">Perbarui informasi profil {selectedUser?.name}</p>
+                            <p className="text-foreground/40 text-sm mb-6">Perbarui informasi profil {selectedUser?.name}</p>
 
                             <form onSubmit={handleUpdateUser} className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Nama Lengkap</label>
+                                    <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Nama Lengkap</label>
                                     <input
                                         required
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
+                                        className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
                                         value={editFormData.name}
                                         onChange={e => setEditFormData({ ...editFormData, name: e.target.value })}
                                         placeholder="Nama Lengkap"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Email</label>
+                                    <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Email</label>
                                     <input
                                         required
                                         type="email"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
+                                        className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
                                         value={editFormData.email}
                                         onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
                                         placeholder="user@charging.id"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Telepon</label>
+                                    <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Telepon</label>
                                     <input
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
+                                        className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
                                         value={editFormData.phone}
                                         onChange={e => setEditFormData({ ...editFormData, phone: e.target.value })}
                                         placeholder="08123xxxx"
@@ -405,7 +405,7 @@ export default function UsersPage() {
                                     <button
                                         type="button"
                                         onClick={() => setShowEditModal(false)}
-                                        className="flex-1 px-6 py-3 rounded-xl border border-white/10 font-bold hover:bg-white/5 transition-all text-sm"
+                                        className="flex-1 px-6 py-3 rounded-xl border border-border font-bold hover:bg-foreground/5 transition-all text-sm"
                                     >
                                         Batal
                                     </button>
@@ -432,25 +432,25 @@ export default function UsersPage() {
                             <div className="flex justify-between items-start mb-6">
                                 <div>
                                     <h2 className="text-2xl font-bold">Riwayat Transaksi</h2>
-                                    <p className="text-white/40 text-sm mt-1">Pelanggan: {selectedUser?.name}</p>
+                                    <p className="text-foreground/40 text-sm mt-1">Pelanggan: {selectedUser?.name}</p>
                                 </div>
-                                <button onClick={() => setShowHistoryModal(false)} className="text-white/20 hover:text-white transition-colors">
+                                <button onClick={() => setShowHistoryModal(false)} className="text-foreground/20 hover:text-foreground transition-colors">
                                     <XCircle className="w-6 h-6" />
                                 </button>
                             </div>
 
                             <div className="max-h-[400px] overflow-y-auto no-scrollbar space-y-3">
                                 {loadingHistory ? (
-                                    <div className="py-20 flex flex-col items-center gap-4 text-white/30">
+                                    <div className="py-20 flex flex-col items-center gap-4 text-foreground/30">
                                         <Loader2 className="w-8 h-8 animate-spin" />
                                         <p className="text-xs">Memuat riwayat...</p>
                                     </div>
                                 ) : userTransactions.length > 0 ? (
                                     userTransactions.map((trx) => (
-                                        <div key={trx.id} className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center justify-between group hover:border-primary/20 transition-all">
+                                        <div key={trx.id} className="bg-foreground/5 border border-border rounded-2xl p-4 flex items-center justify-between group hover:border-primary/20 transition-all">
                                             <div className="min-w-0">
                                                 <p className="font-bold text-sm">#{trx.id.substring(0, 8)}</p>
-                                                <p className="text-[10px] text-white/40 mt-0.5">
+                                                <p className="text-[10px] text-foreground/40 mt-0.5">
                                                     {new Date(trx.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} • {new Date(trx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                 </p>
                                                 <p className="text-[10px] text-primary font-bold uppercase mt-1">
@@ -467,7 +467,7 @@ export default function UsersPage() {
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="py-20 text-center text-white/20">
+                                    <div className="py-20 text-center text-foreground/20">
                                         <p className="text-sm italic">Belum ada riwayat transaksi.</p>
                                     </div>
                                 )}

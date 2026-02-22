@@ -109,6 +109,7 @@ func (h *AdminHandler) ResetData(c *gin.Context) {
 		return
 	}
 
+	logActivity(c, h.DB, "Reset Transaksi", "Semua Tabel", "Admin mereset seluruh data transaksi dan saldo pengguna")
 	c.JSON(http.StatusOK, gin.H{"message": "Seluruh data transaksi telah direset dan saldo dikembalikan ke 0"})
 }
 func (h *AdminHandler) DeleteUser(c *gin.Context) {
@@ -150,6 +151,7 @@ func (h *AdminHandler) DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menghapus pengguna: " + err.Error()})
 		return
 	}
+	logActivity(c, h.DB, "Hapus Pengguna", target.Email, "Admin menghapus pengguna: "+target.Name)
 	c.JSON(http.StatusOK, gin.H{"message": "Pengguna berhasil dihapus"})
 }
 
@@ -333,6 +335,7 @@ func (h *AdminHandler) UpdateSettings(c *gin.Context) {
 		}
 	}
 
+	logActivity(c, h.DB, "Update Pengaturan", "Sistem", "Admin memperbarui pengaturan global")
 	c.JSON(http.StatusOK, gin.H{"message": "Pengaturan berhasil diperbarui"})
 }
 
@@ -426,6 +429,7 @@ func (h *AdminHandler) BlockUser(c *gin.Context) {
 		return
 	}
 
+	logActivity(c, h.DB, "Blokir Pengguna", id.String(), "Admin memblokir akses pengguna")
 	c.JSON(http.StatusOK, gin.H{"message": "User berhasil diblokir"})
 }
 
@@ -441,6 +445,7 @@ func (h *AdminHandler) UnblockUser(c *gin.Context) {
 		return
 	}
 
+	logActivity(c, h.DB, "Aktifkan Pengguna", id.String(), "Admin mengaktifkan kembali akses pengguna")
 	c.JSON(http.StatusOK, gin.H{"message": "User berhasil diaktifkan kembali"})
 }
 
@@ -457,4 +462,14 @@ func (h *AdminHandler) GetUserTransactions(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, transactions)
+}
+
+func (h *AdminHandler) GetActivityLogs(c *gin.Context) {
+	var logs []models.ActivityLog
+	if err := h.DB.Order("created_at desc").Limit(20).Find(&logs).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil log aktivitas: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, logs)
 }

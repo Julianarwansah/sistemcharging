@@ -104,12 +104,12 @@ export default function AdminLayout() {
 
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Header */}
-                <header className="h-20 bg-background/95 backdrop-blur-xl sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between border-b border-white/5">
+                <header className="h-20 bg-background/95 backdrop-blur-xl sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between border-b border-border">
                     <div className="flex items-center gap-4">
                         {/* Desktop Collapse Toggle */}
                         <button
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="hidden lg:flex w-10 h-10 items-center justify-center hover:bg-white/5 rounded-xl transition-colors border border-white/10"
+                            className="hidden lg:flex w-10 h-10 items-center justify-center hover:bg-foreground/5 rounded-xl transition-colors border border-border"
                         >
                             {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
                         </button>
@@ -117,17 +117,17 @@ export default function AdminLayout() {
                         {/* Mobile Menu Toggle */}
                         <button
                             onClick={() => setIsMobileOpen(true)}
-                            className="lg:hidden w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-xl transition-colors border border-white/10"
+                            className="lg:hidden w-10 h-10 flex items-center justify-center hover:bg-foreground/5 rounded-xl transition-colors border border-border"
                         >
                             <Menu className="w-6 h-6" />
                         </button>
 
                         <div className="relative hidden md:block w-64 lg:w-96">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 w-5 h-5" />
                             <input
                                 type="text"
                                 placeholder="Cari..."
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-12 pr-4 focus:outline-none focus:border-primary/50 transition-colors"
+                                className="w-full bg-foreground/5 border border-border rounded-xl py-2.5 pl-12 pr-4 focus:outline-none focus:border-primary/50 transition-colors"
                             />
                         </div>
                     </div>
@@ -139,7 +139,7 @@ export default function AdminLayout() {
                                     setShowNotificationDropdown(!showNotificationDropdown);
                                     setHasUnread(false);
                                 }}
-                                className="relative w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-full transition-colors"
+                                className="relative w-10 h-10 flex items-center justify-center hover:bg-foreground/5 rounded-full transition-colors"
                             >
                                 <Bell className="w-6 h-6 text-white/70" />
                                 {hasUnread && (
@@ -149,20 +149,20 @@ export default function AdminLayout() {
 
                             {/* Notifications Dropdown */}
                             {showNotificationDropdown && (
-                                <div className="absolute right-0 top-full mt-2 w-80 bg-card border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+                                <div className="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="px-4 py-3 border-b border-border bg-foreground/[0.02]">
                                         <h3 className="text-sm font-bold">Aktivitas Terbaru</h3>
                                     </div>
                                     <div className="max-h-[400px] overflow-y-auto no-scrollbar">
                                         {notifications.length > 0 ? (
                                             notifications.map((notif, i) => (
-                                                <div key={i} className="px-4 py-3 border-b border-white/5 hover:bg-white/[0.02] transition-colors cursor-pointer group">
+                                                <div key={i} className="px-4 py-3 border-b border-border hover:bg-foreground/[0.02] transition-colors cursor-pointer group">
                                                     <div className="flex items-start gap-3">
                                                         <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${notif.status === 'success' ? 'bg-primary' : notif.status === 'warning' ? 'bg-orange-500' : 'bg-blue-500'}`} />
                                                         <div className="min-w-0">
                                                             <p className="text-xs font-bold group-hover:text-primary transition-colors">{notif.title}</p>
-                                                            <p className="text-[11px] text-white/50 mt-0.5 leading-relaxed">{notif.message}</p>
-                                                            <p className="text-[9px] text-white/30 mt-1 uppercase tracking-wider">
+                                                            <p className="text-[11px] text-foreground/50 mt-0.5 leading-relaxed">{notif.message}</p>
+                                                            <p className="text-[9px] text-foreground/30 mt-1 uppercase tracking-wider">
                                                                 {new Date(notif.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} • {new Date(notif.time).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
                                                             </p>
                                                         </div>
@@ -171,18 +171,18 @@ export default function AdminLayout() {
                                             ))
                                         ) : (
                                             <div className="px-4 py-8 text-center">
-                                                <p className="text-xs text-white/30 italic">Tidak ada aktivitas terbaru.</p>
+                                                <p className="text-xs text-foreground/30 italic">Tidak ada aktivitas terbaru.</p>
                                             </div>
                                         )}
                                     </div>
-                                    <div className="px-4 py-2 text-center border-t border-white/5 bg-white/[0.01]">
+                                    <div className="px-4 py-2 text-center border-t border-border bg-foreground/[0.01]">
                                         <button className="text-[10px] text-primary font-bold hover:underline">Lihat Semua Laporan</button>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <div className="flex items-center gap-3 pl-3 lg:pl-6 border-l border-white/10 relative" ref={dropdownRef}>
+                        <div className="flex items-center gap-3 pl-3 lg:pl-6 border-l border-border relative" ref={dropdownRef}>
                             <button
                                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                                 className="flex items-center gap-3 group text-left"
@@ -191,10 +191,10 @@ export default function AdminLayout() {
                                     <p className="font-bold text-sm group-hover:text-primary transition-colors">
                                         {admin?.name || (error ? 'Session Error' : 'Loading...')}
                                     </p>
-                                    <p className="text-xs text-white/40">{admin?.email || (error ? 'Please re-login' : '...')}</p>
+                                    <p className="text-xs text-foreground/40">{admin?.email || (error ? 'Please re-login' : '...')}</p>
                                 </div>
-                                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/10 shrink-0 group-hover:border-primary/50 transition-all relative">
-                                    <User className="w-6 h-6 text-white/60 group-hover:text-primary" />
+                                <div className="w-10 h-10 bg-foreground/10 rounded-full flex items-center justify-center border border-border shrink-0 group-hover:border-primary/50 transition-all relative">
+                                    <User className="w-6 h-6 text-foreground/60 group-hover:text-primary" />
                                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center border-2 border-background">
                                         <ChevronDown className="w-3 h-3 text-white" />
                                     </div>
@@ -203,20 +203,20 @@ export default function AdminLayout() {
 
                             {/* Dropdown Menu */}
                             {showProfileDropdown && (
-                                <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="px-4 py-3 border-b border-white/5 md:hidden">
+                                <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="px-4 py-3 border-b border-border md:hidden">
                                         <p className="text-sm font-bold truncate">{admin?.name}</p>
-                                        <p className="text-xs text-white/40 truncate">{admin?.email}</p>
+                                        <p className="text-xs text-foreground/40 truncate">{admin?.email}</p>
                                     </div>
                                     <Link
                                         to="/settings"
                                         onClick={() => setShowProfileDropdown(false)}
-                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-white/5 transition-colors text-white/70 hover:text-white"
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-foreground/5 transition-colors text-foreground/70 hover:text-foreground"
                                     >
                                         <Settings className="w-4 h-4" />
                                         <span>Pengaturan Profil</span>
                                     </Link>
-                                    <div className="h-px bg-white/5 my-1"></div>
+                                    <div className="h-px bg-foreground/5 my-1"></div>
                                     <button
                                         onClick={() => {
                                             setShowProfileDropdown(false);

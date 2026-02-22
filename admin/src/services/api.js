@@ -53,6 +53,7 @@ export const adminService = {
     deleteUser: (id) => api.delete(`/admin/users/${id}`),
     resetData: () => api.post('/admin/reset'),
     registerAdmin: (data) => api.post('/admin/register', data),
+    getActivityLogs: () => api.get('/admin/activity'),
 };
 
 export default api;

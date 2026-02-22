@@ -89,7 +89,7 @@ export default function SettingsPage() {
         <div className="space-y-6 sm:space-y-8 max-w-full overflow-x-hidden">
             <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl font-bold break-words">Pengaturan Sistem</h1>
-                <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Konfigurasi parameter dan keamanan dashboard admin.</p>
+                <p className="text-foreground/50 mt-1 text-sm sm:text-base break-words">Konfigurasi parameter dan keamanan dashboard admin.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -132,41 +132,41 @@ export default function SettingsPage() {
                             <form onSubmit={handleUpdateSettings} className="space-y-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Nama Sistem</label>
+                                        <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Nama Sistem</label>
                                         <input
                                             value={settings.system_name}
                                             onChange={e => setSettings({ ...settings, system_name: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
+                                            className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
                                             placeholder=" Charging Station Dashboard"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Harga Default per kWh (IDR)</label>
+                                        <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Harga Default per kWh (IDR)</label>
                                         <input
                                             type="number"
                                             value={settings.default_price_per_kwh}
                                             onChange={e => setSettings({ ...settings, default_price_per_kwh: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
+                                            className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
                                             placeholder="2500"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Mata Uang</label>
+                                        <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Mata Uang</label>
                                         <select
                                             value={settings.currency}
                                             onChange={e => setSettings({ ...settings, currency: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm appearance-none cursor-pointer"
+                                            className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm appearance-none cursor-pointer"
                                         >
                                             <option value="IDR">IDR - Rupiah Indonesia</option>
                                             <option value="USD">USD - US Dollar</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Zona Waktu</label>
+                                        <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Zona Waktu</label>
                                         <select
                                             value={settings.timezone}
                                             onChange={e => setSettings({ ...settings, timezone: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm appearance-none cursor-pointer"
+                                            className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm appearance-none cursor-pointer"
                                         >
                                             <option value="Asia/Jakarta">Asia/Jakarta (WIB)</option>
                                             <option value="Asia/Makassar">Asia/Makassar (WITA)</option>
@@ -194,36 +194,36 @@ export default function SettingsPage() {
                             <form onSubmit={handleChangePassword} className="space-y-6 max-w-md">
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Kata Sandi Saat Ini</label>
+                                        <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Kata Sandi Saat Ini</label>
                                         <input
                                             type="password"
                                             required
                                             value={passwordData.current_password}
                                             onChange={e => setPasswordData({ ...passwordData, current_password: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
+                                            className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
                                         />
                                     </div>
-                                    <div className="h-px bg-white/5 my-2"></div>
+                                    <div className="h-px bg-foreground/5 my-2"></div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Kata Sandi Baru</label>
+                                        <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Kata Sandi Baru</label>
                                         <input
                                             type="password"
                                             required
                                             minLength={6}
                                             value={passwordData.new_password}
                                             onChange={e => setPasswordData({ ...passwordData, new_password: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
+                                            className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
                                             placeholder="Minimal 6 karakter"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Konfirmasi Kata Sandi Baru</label>
+                                        <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest pl-1">Konfirmasi Kata Sandi Baru</label>
                                         <input
                                             type="password"
                                             required
                                             value={passwordData.confirm_password}
                                             onChange={e => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
+                                            className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
                                         />
                                     </div>
                                 </div>
@@ -248,7 +248,7 @@ export default function SettingsPage() {
                             <div className="space-y-10">
                                 {/* Theme Selection */}
                                 <section className="space-y-4">
-                                    <h4 className="text-sm font-bold text-white/40 uppercase tracking-widest pl-1">Tema Sistem</h4>
+                                    <h4 className="text-sm font-bold text-foreground/40 uppercase tracking-widest pl-1">Tema Sistem</h4>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <ThemeOption
                                             active={appearance.theme === 'dark'}
@@ -279,7 +279,7 @@ export default function SettingsPage() {
 
                                 {/* Accent Color Selection */}
                                 <section className="space-y-4">
-                                    <h4 className="text-sm font-bold text-white/40 uppercase tracking-widest pl-1">Warna Aksen</h4>
+                                    <h4 className="text-sm font-bold text-foreground/40 uppercase tracking-widest pl-1">Warna Aksen</h4>
                                     <div className="flex flex-wrap gap-4">
                                         {Object.entries(accents).map(([key, colors]) => (
                                             <button
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                                             </button>
                                         ))}
                                     </div>
-                                    <p className="text-xs text-white/30 italic mt-2">Warna ini akan digunakan untuk tombol, icon, dan elemen aktif lainnya.</p>
+                                    <p className="text-xs text-foreground/30 italic mt-2">Warna ini akan digunakan untuk tombol, icon, dan elemen aktif lainnya.</p>
                                 </section>
                             </div>
                         </div>
@@ -301,11 +301,11 @@ export default function SettingsPage() {
 
                     {activeTab === 'notification' && (
                         <div className="glass rounded-3xl p-12 text-center animate-in fade-in slide-in-from-right-4 duration-300">
-                            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Bell className="w-10 h-10 text-white/20" />
+                            <div className="w-20 h-20 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Bell className="w-10 h-10 text-foreground/20" />
                             </div>
                             <h3 className="text-xl font-bold mb-2">Tersedia Segera</h3>
-                            <p className="text-white/40 text-sm">Fitur kustomisasi notifikasi sedang dalam tahap pengembangan.</p>
+                            <p className="text-foreground/40 text-sm">Fitur kustomisasi notifikasi sedang dalam tahap pengembangan.</p>
                         </div>
                     )}
                 </div>
@@ -314,19 +314,19 @@ export default function SettingsPage() {
             <div className="glass rounded-3xl p-8 mt-8 border border-primary/10">
                 <h3 className="text-xl font-bold mb-4">Informasi Sistem</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="p-4 bg-white/5 rounded-2xl">
-                        <p className="text-[10px] text-white/30 uppercase font-bold">API Version</p>
+                    <div className="p-4 bg-foreground/5 rounded-2xl">
+                        <p className="text-[10px] text-foreground/30 uppercase font-bold">API Version</p>
                         <p className="font-bold mt-1 text-primary">v1.2.0-stable</p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-2xl">
-                        <p className="text-[10px] text-white/30 uppercase font-bold">Status Server</p>
+                    <div className="p-4 bg-foreground/5 rounded-2xl">
+                        <p className="text-[10px] text-foreground/30 uppercase font-bold">Status Server</p>
                         <p className="font-bold mt-1 text-primary flex items-center gap-2">
                             <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
                             Online (Running)
                         </p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-2xl">
-                        <p className="text-[10px] text-white/30 uppercase font-bold">Basis Data</p>
+                    <div className="p-4 bg-foreground/5 rounded-2xl">
+                        <p className="text-[10px] text-foreground/30 uppercase font-bold">Basis Data</p>
                         <p className="font-bold mt-1">PostgreSQL 15 (Connected)</p>
                     </div>
                 </div>
@@ -341,15 +341,15 @@ function ThemeOption({ active, onClick, title, desc, icon: Icon, previewClass })
             onClick={onClick}
             className={`flex flex-col gap-4 p-5 rounded-3xl border-2 transition-all text-left group ${active
                 ? 'border-primary bg-primary/5'
-                : 'border-white/5 hover:border-white/20 bg-white/5'
+                : 'border-border hover:border-foreground/20 bg-foreground/5'
                 }`}
         >
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${previewClass} border border-white/10 shadow-lg group-hover:scale-110 transition-transform`}>
-                <Icon className={`w-6 h-6 ${active ? 'text-primary' : 'text-white/40'}`} />
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${previewClass} border border-border shadow-lg group-hover:scale-110 transition-transform`}>
+                <Icon className={`w-6 h-6 ${active ? 'text-primary' : 'text-foreground/40'}`} />
             </div>
             <div>
                 <p className={`font-bold text-sm ${active ? 'text-primary' : ''}`}>{title}</p>
-                <p className="text-xs text-white/40 mt-1">{desc}</p>
+                <p className="text-xs text-foreground/40 mt-1">{desc}</p>
             </div>
         </button>
     );
@@ -361,7 +361,7 @@ function TabButton({ active, onClick, icon: Icon, title }) {
             onClick={onClick}
             className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${active
                 ? 'bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5'
-                : 'hover:bg-white/5 text-white/60 hover:text-white'
+                : 'hover:bg-foreground/5 text-foreground/60 hover:text-foreground'
                 }`}
         >
             <Icon className="w-5 h-5" />

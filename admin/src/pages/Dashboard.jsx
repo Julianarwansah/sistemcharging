@@ -9,7 +9,8 @@ import {
     ArrowDownRight,
     Zap,
     Loader2,
-    Clock
+    Clock,
+    ShieldCheck
 } from 'lucide-react';
 import {
     AreaChart,
@@ -32,18 +33,20 @@ export default function Dashboard() {
     const [activeStations, setActiveStations] = useState([]);
     const [revenueData, setRevenueData] = useState([]);
     const [notifications, setNotifications] = useState([]);
+    const [activityLogs, setActivityLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [statsRes, stationsRes, revenueRes, activeRes, notifRes] = await Promise.all([
+                const [statsRes, stationsRes, revenueRes, activeRes, notifRes, activityRes] = await Promise.all([
                     adminService.getStats(),
                     adminService.getStations(),
                     adminService.getRevenueStats(),
                     adminService.getActiveStations(),
-                    adminService.getNotifications()
+                    adminService.getNotifications(),
+                    adminService.getActivityLogs()
                 ]);
                 setStats(statsRes.data);
                 setStations(stationsRes.data.stations || []);
@@ -53,6 +56,7 @@ export default function Dashboard() {
                 })));
                 setActiveStations(activeRes.data || []);
                 setNotifications(notifRes.data || []);
+                setActivityLogs(activityRes.data || []);
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
             } finally {
@@ -95,7 +99,7 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="min-w-0">
                     <h1 className="text-2xl sm:text-3xl font-bold break-words">Halo, Admin 👋</h1>
-                    <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Berikut ringkasan performa sistem charging hari ini.</p>
+                    <p className="text-foreground/50 mt-1 text-sm sm:text-base break-words">Berikut ringkasan performa sistem charging hari ini.</p>
                 </div>
                 <button
                     onClick={async () => {
@@ -157,7 +161,7 @@ export default function Dashboard() {
                 <div className="lg:col-span-2 glass rounded-3xl p-4 lg:p-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                         <h3 className="text-xl font-bold">Tren Transaksi</h3>
-                        <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm focus:outline-none w-full sm:w-auto">
+                        <select className="bg-foreground/5 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none w-full sm:w-auto">
                             <option>7 Hari Terakhir</option>
                             <option>30 Hari Terakhir</option>
                         </select>
@@ -171,29 +175,29 @@ export default function Dashboard() {
                                         <stop offset="95%" stopColor="#00C853" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                 <XAxis
                                     dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#ffffff60', fontSize: 10 }}
+                                    tick={{ fill: 'var(--text-dim)', fontSize: 10 }}
                                     dy={10}
                                 />
                                 <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#ffffff60', fontSize: 10 }}
+                                    tick={{ fill: 'var(--text-dim)', fontSize: 10 }}
                                     tickFormatter={(value) => `Rp${value / 1000}k`}
                                 />
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: '#1B263B',
-                                        border: '1px solid #ffffff10',
+                                        backgroundColor: 'var(--card-color)',
+                                        border: '1px solid var(--border-color)',
                                         borderRadius: '12px',
-                                        color: '#fff',
+                                        color: 'var(--text-color)',
                                         fontSize: '12px'
                                     }}
-                                    itemStyle={{ color: '#00C853' }}
+                                    itemStyle={{ color: 'var(--primary-color)' }}
                                 />
                                 <Area
                                     type="monotone"
@@ -226,52 +230,95 @@ export default function Dashboard() {
                             ))
                         ) : (
                             <div className="py-8 text-center">
-                                <p className="text-white/30 text-xs italic">Belum ada data transaksi.</p>
+                                <p className="text-foreground/30 text-xs italic">Belum ada data transaksi.</p>
                             </div>
                         )}
                     </div>
                     <button
                         onClick={() => navigate('/stations')}
-                        className="w-full mt-8 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+                        className="w-full mt-8 py-3 rounded-xl border border-border text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-all text-sm font-medium"
                     >
                         Lihat Semua Stasiun
                     </button>
                 </div>
             </div>
 
-            {/* Bottom Row: Recent Activity */}
-            <div className="glass rounded-3xl p-6 lg:p-8 mt-8">
-                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-primary" />
-                    Aktivitas Terbaru
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {notifications.length > 0 ? (
-                        notifications.slice(0, 6).map((notif, idx) => (
-                            <div key={idx} className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all">
-                                <div className={`p-2 rounded-lg ${notif.type === 'payment' ? 'bg-primary/10 text-primary' :
-                                    notif.type === 'user' ? 'bg-blue-500/10 text-blue-500' :
-                                        'bg-orange-500/10 text-orange-500'
-                                    }`}>
-                                    {notif.type === 'payment' ? <DollarSign className="w-4 h-4" /> :
-                                        notif.type === 'user' ? <Users className="w-4 h-4" /> :
-                                            <Zap className="w-4 h-4" />}
+            {/* Bottom Row: Logs */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                {/* Recent Activity */}
+                <div className="glass rounded-3xl p-6 lg:p-8">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-primary" />
+                        Sistem & Transaksi
+                    </h3>
+                    <div className="space-y-4">
+                        {notifications.length > 0 ? (
+                            notifications.slice(0, 5).map((notif, idx) => (
+                                <div key={idx} className="flex items-start gap-4 p-4 rounded-2xl bg-foreground/5 border border-border hover:border-primary/20 transition-all">
+                                    <div className={`p-2 rounded-lg ${notif.type === 'payment' ? 'bg-primary/10 text-primary' :
+                                        notif.type === 'user' ? 'bg-blue-500/10 text-blue-500' :
+                                            'bg-orange-500/10 text-orange-500'
+                                        }`}>
+                                        {notif.type === 'payment' ? <DollarSign className="w-4 h-4" /> :
+                                            notif.type === 'user' ? <Users className="w-4 h-4" /> :
+                                                <Zap className="w-4 h-4" />}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-bold text-sm truncate">{notif.title}</p>
+                                        <p className="text-xs text-foreground/40 mt-1 line-clamp-2">{notif.message}</p>
+                                        <p className="text-[10px] text-foreground/20 mt-2">
+                                            {typeof notif.time === 'string' ? notif.time : new Date(notif.time).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="font-bold text-sm truncate">{notif.title}</p>
-                                    <p className="text-xs text-white/40 mt-1 line-clamp-2">{notif.message}</p>
-                                    <p className="text-[10px] text-white/20 mt-2">{notif.time}</p>
-                                </div>
+                            ))
+                        ) : (
+                            <div className="py-12 text-center">
+                                <p className="text-foreground/20 italic text-sm">Belum ada aktivitas terbaru.</p>
                             </div>
-                        ))
-                    ) : (
-                        <div className="col-span-full py-12 text-center">
-                            <p className="text-white/20 italic text-sm">Belum ada aktivitas terbaru.</p>
-                        </div>
-                    )}
+                        )}
+                    </div>
+                </div>
+
+                {/* Admin Activity Logs */}
+                <div className="glass rounded-3xl p-6 lg:p-8">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-primary" />
+                        Log Administrator
+                    </h3>
+                    <div className="space-y-4">
+                        {activityLogs.length > 0 ? (
+                            activityLogs.slice(0, 5).map((log, idx) => (
+                                <div key={log.id} className="flex items-start gap-4 p-4 rounded-2xl bg-foreground/5 border border-border hover:border-primary/20 transition-all">
+                                    <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                                        <ShieldCheck className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <p className="font-bold text-sm truncate">{log.admin_name}</p>
+                                            <span className="text-[9px] uppercase font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                                                {log.action}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-foreground/40 mt-1 line-clamp-2">{log.detail}</p>
+                                        <div className="flex items-center justify-between mt-2">
+                                            <p className="text-[10px] text-foreground/20">
+                                                {new Date(log.created_at).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}
+                                            </p>
+                                            <p className="text-[9px] text-foreground/10 font-mono">{log.ip_address}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="py-12 text-center">
+                                <p className="text-foreground/20 italic text-sm">Belum ada log aktivitas admin.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
@@ -288,19 +335,19 @@ function StatCard({ title, value, icon: Icon, trend, trendUp, color }) {
                 </div>
             </div>
             <div className="mt-4">
-                <p className="text-white/40 text-sm font-medium">{title}</p>
+                <p className="text-foreground/40 text-sm font-medium">{title}</p>
                 <h4 className="text-2xl font-bold mt-1 tracking-tight">{value}</h4>
             </div>
         </div>
     );
 }
 
-function PopularStation({ name, uses, income, customLabel }) {
+function StationRankItem({ name, uses, income, customLabel }) {
     return (
         <div className="flex items-center justify-between group">
             <div className="min-w-0 pr-4">
                 <h5 className="font-bold text-sm group-hover:text-primary transition-colors truncate">{name}</h5>
-                <p className="text-xs text-white/40 mt-0.5">
+                <p className="text-xs text-foreground/40 mt-0.5">
                     {customLabel === 'status' ? `${uses} connector` : `${uses} transaksi hari ini`}
                 </p>
             </div>

@@ -88,11 +88,11 @@ export default function Transactions() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div className="min-w-0">
                     <h1 className="text-2xl sm:text-3xl font-bold break-words">Riwayat Transaksi</h1>
-                    <p className="text-white/50 mt-1 text-sm sm:text-base break-words">Daftar semua sesi charging dan pembayaran pengguna.</p>
+                    <p className="text-foreground/50 mt-1 text-sm sm:text-base break-words">Daftar semua sesi charging dan pembayaran pengguna.</p>
                 </div>
                 <button
                     onClick={downloadCSV}
-                    className="bg-white/5 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 border border-white/10 hover:bg-white/10 transition-all w-full sm:w-auto"
+                    className="bg-foreground/5 text-foreground px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 border border-border hover:bg-foreground/10 transition-all w-full sm:w-auto"
                 >
                     <Download className="w-5 h-5" />
                     Export CSV
@@ -102,28 +102,28 @@ export default function Transactions() {
             {/* Filters */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="relative sm:col-span-2 lg:col-span-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 w-5 h-5" />
                     <input
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Cari ID Transaksi atau User..."
-                        className="w-full bg-card border border-white/10 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-primary/50 transition-colors"
+                        className="w-full bg-card border border-border rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-primary/50 transition-colors"
                     />
                 </div>
                 <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
-                    <select className="w-full bg-card border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none appearance-none">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 w-5 h-5" />
+                    <select className="w-full bg-card border border-border rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none appearance-none">
                         <option>Semua Tanggal</option>
                         <option>Hari Ini</option>
                         <option>Minggu Ini</option>
                     </select>
                 </div>
                 <div className="relative">
-                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
+                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 w-5 h-5" />
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="w-full bg-card border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none appearance-none"
+                        className="w-full bg-card border border-border rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none appearance-none"
                     >
                         <option value="all">Semua Status</option>
                         <option value="completed">Success</option>
@@ -138,16 +138,16 @@ export default function Transactions() {
                 <div className="overflow-x-auto no-scrollbar">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
-                            <tr className="border-b border-white/5 bg-white/[0.02]">
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">ID & User</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Stasiun & Konektor</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Energi & Biaya</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Waktu</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Status</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30"></th>
+                            <tr className="border-b border-border bg-foreground/[0.02]">
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30">ID & User</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30">Stasiun & Konektor</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30">Energi & Biaya</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30">Waktu</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30">Status</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-foreground/30"></th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-border">
                             {transactions
                                 .filter(trx => {
                                     const matchesSearch =
@@ -162,16 +162,16 @@ export default function Transactions() {
                                     return matchesSearch && matchesStatus;
                                 })
                                 .map((trx) => (
-                                    <tr key={trx.id} className="hover:bg-white/[0.01] transition-colors">
+                                    <tr key={trx.id} className="hover:bg-foreground/[0.01] transition-colors">
                                         <td className="px-8 py-6">
                                             <p className="font-bold text-sm">#{trx.id.substring(0, 8)}</p>
-                                            <p className="text-[10px] text-white/30 uppercase tracking-widest mt-1">
+                                            <p className="text-[10px] text-foreground/30 uppercase tracking-widest mt-1">
                                                 {new Date(trx.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                                             </p>
                                         </td>
                                         <td className="px-8 py-6">
                                             <p className="font-bold text-sm">{trx.user?.name || 'Unknown'}</p>
-                                            <p className="text-xs text-white/40 mt-1">{trx.user?.email}</p>
+                                            <p className="text-xs text-foreground/40 mt-1">{trx.user?.email}</p>
                                         </td>
                                         <td className="px-8 py-6">
                                             <p className="text-sm font-medium">{trx.connector?.station?.name || 'Manual'}</p>
@@ -179,10 +179,10 @@ export default function Transactions() {
                                         </td>
                                         <td className="px-8 py-6">
                                             <p className="font-bold text-sm">Rp {new Intl.NumberFormat('id-ID').format(trx.total_cost || 0)}</p>
-                                            <p className="text-[10px] text-white/30 uppercase mt-1">{trx.energy_kwh} kWh</p>
+                                            <p className="text-[10px] text-foreground/30 uppercase mt-1">{trx.energy_kwh} kWh</p>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${trx.status === 'completed' || trx.status === 'paid' ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white/40'
+                                            <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${trx.status === 'completed' || trx.status === 'paid' ? 'bg-primary/10 text-primary' : 'bg-foreground/10 text-foreground/40'
                                                 }`}>
                                                 {trx.status}
                                             </span>
@@ -193,7 +193,7 @@ export default function Transactions() {
                                                     setSelectedTrx(trx);
                                                     setShowModal(true);
                                                 }}
-                                                className="p-2 bg-white/5 rounded-lg text-white/40 hover:text-white hover:bg-primary transition-all"
+                                                className="p-2 bg-foreground/5 rounded-lg text-foreground/40 hover:text-foreground hover:bg-primary transition-all"
                                             >
                                                 <ArrowRight className="w-4 h-4" />
                                             </button>
@@ -205,11 +205,11 @@ export default function Transactions() {
                 </div>
 
                 {/* Pagination placeholder */}
-                <div className="p-6 bg-white/[0.02] flex items-center justify-between">
-                    <p className="text-xs text-white/30">Menampilkan 4 dari 1,280 transaksi</p>
+                <div className="p-6 bg-foreground/[0.02] flex items-center justify-between">
+                    <p className="text-xs text-foreground/30">Menampilkan 4 dari 1,280 transaksi</p>
                     <div className="flex gap-2">
-                        <button className="px-4 py-2 bg-white/5 rounded-xl text-xs font-bold disabled:opacity-30" disabled>Sebelumnya</button>
-                        <button className="px-4 py-2 bg-white/5 rounded-xl text-xs font-bold hover:bg-white/10 transition-all">Berikutnya</button>
+                        <button className="px-4 py-2 bg-foreground/5 rounded-xl text-xs font-bold disabled:opacity-30" disabled>Sebelumnya</button>
+                        <button className="px-4 py-2 bg-foreground/5 rounded-xl text-xs font-bold hover:bg-foreground/10 transition-all">Berikutnya</button>
                     </div>
                 </div>
             </div>
@@ -223,9 +223,9 @@ export default function Transactions() {
                             <div className="flex justify-between items-start mb-6">
                                 <div>
                                     <h2 className="text-2xl font-bold">Detail Transaksi</h2>
-                                    <p className="text-white/40 text-sm mt-1">ID: {selectedTrx.id}</p>
+                                    <p className="text-foreground/40 text-sm mt-1">ID: {selectedTrx.id}</p>
                                 </div>
-                                <span className={`text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-full ${selectedTrx.status === 'completed' || selectedTrx.status === 'paid' ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white/40'}`}>
+                                <span className={`text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-full ${selectedTrx.status === 'completed' || selectedTrx.status === 'paid' ? 'bg-primary/10 text-primary' : 'bg-foreground/10 text-foreground/40'}`}>
                                     {selectedTrx.status}
                                 </span>
                             </div>
@@ -233,21 +233,21 @@ export default function Transactions() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
                                     <div>
-                                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2">Informasi Pengguna</p>
-                                        <div className="bg-white/5 rounded-2xl p-4">
+                                        <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest mb-2">Informasi Pengguna</p>
+                                        <div className="bg-foreground/5 rounded-2xl p-4">
                                             <p className="font-bold">{selectedTrx.user?.name || 'Unknown'}</p>
-                                            <p className="text-xs text-white/40 mt-1">{selectedTrx.user?.email || '-'}</p>
-                                            <p className="text-xs text-white/40">{selectedTrx.user?.phone || '-'}</p>
+                                            <p className="text-xs text-foreground/40 mt-1">{selectedTrx.user?.email || '-'}</p>
+                                            <p className="text-xs text-foreground/40">{selectedTrx.user?.phone || '-'}</p>
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2">Lokasi Pengisian</p>
-                                        <div className="bg-white/5 rounded-2xl p-4">
+                                        <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest mb-2">Lokasi Pengisian</p>
+                                        <div className="bg-foreground/5 rounded-2xl p-4">
                                             <p className="font-bold">{selectedTrx.connector?.station?.name || 'Stasiun Manual'}</p>
-                                            <p className="text-xs text-white/40 mt-1">{selectedTrx.connector?.station?.address || '-'}</p>
+                                            <p className="text-xs text-foreground/40 mt-1">{selectedTrx.connector?.station?.address || '-'}</p>
                                             <div className="flex gap-2 mt-3">
                                                 <span className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-bold uppercase">{selectedTrx.connector?.connector_type}</span>
-                                                <span className="text-[10px] bg-white/10 text-white/60 px-2 py-1 rounded-md font-bold uppercase">{selectedTrx.connector?.power_kw} kW</span>
+                                                <span className="text-[10px] bg-foreground/10 text-foreground/60 px-2 py-1 rounded-md font-bold uppercase">{selectedTrx.connector?.power_kw} kW</span>
                                             </div>
                                         </div>
                                     </div>
@@ -255,21 +255,21 @@ export default function Transactions() {
 
                                 <div className="space-y-6">
                                     <div>
-                                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2">Rincian Sesi</p>
-                                        <div className="bg-white/5 rounded-2xl p-4 space-y-3">
+                                        <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest mb-2">Rincian Sesi</p>
+                                        <div className="bg-foreground/5 rounded-2xl p-4 space-y-3">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-white/40">Waktu Mulai</span>
+                                                <span className="text-xs text-foreground/40">Waktu Mulai</span>
                                                 <span className="text-xs font-medium">{new Date(selectedTrx.created_at).toLocaleString('id-ID')}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-white/40">Energi Terpakai</span>
+                                                <span className="text-xs text-foreground/40">Energi Terpakai</span>
                                                 <span className="text-xs font-bold text-primary">{selectedTrx.energy_kwh} kWh</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-white/40">Harga per kWh</span>
+                                                <span className="text-xs text-foreground/40">Harga per kWh</span>
                                                 <span className="text-xs font-medium">Rp {new Intl.NumberFormat('id-ID').format(selectedTrx.connector?.price_per_kwh || 0)}</span>
                                             </div>
-                                            <div className="pt-3 border-t border-white/5 flex justify-between items-center">
+                                            <div className="pt-3 border-t border-border flex justify-between items-center">
                                                 <span className="text-sm font-bold">Total Biaya</span>
                                                 <span className="text-lg font-bold text-primary">Rp {new Intl.NumberFormat('id-ID').format(selectedTrx.total_cost || 0)}</span>
                                             </div>
@@ -277,7 +277,7 @@ export default function Transactions() {
                                     </div>
                                     <button
                                         onClick={() => setShowModal(false)}
-                                        className="w-full bg-white/5 border border-white/10 hover:bg-white/10 text-white py-3 rounded-xl font-bold transition-all text-sm"
+                                        className="w-full bg-foreground/5 border border-border hover:bg-foreground/10 text-foreground py-3 rounded-xl font-bold transition-all text-sm"
                                     >
                                         Tutup
                                     </button>

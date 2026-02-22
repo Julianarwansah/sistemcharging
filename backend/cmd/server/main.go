@@ -103,6 +103,7 @@ func main() {
 				admin.POST("/users/:id/block", adminHandler.BlockUser)
 				admin.POST("/users/:id/unblock", adminHandler.UnblockUser)
 				admin.GET("/users/:id/transactions", adminHandler.GetUserTransactions)
+				admin.GET("/activity", adminHandler.GetActivityLogs)
 				admin.DELETE("/users/:id", adminHandler.DeleteUser)
 				admin.POST("/reset", adminHandler.ResetData)
 			}

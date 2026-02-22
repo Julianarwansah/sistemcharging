@@ -35,6 +35,7 @@ func Migrate() {
 		&models.Payment{},
 		&models.WalletTransaction{},
 		&models.SystemConfig{},
+		&models.ActivityLog{},
 	)
 	// Manual migration for GoogleID to handle NULL values in unique index
 	DB.Exec("ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL")

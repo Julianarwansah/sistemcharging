@@ -38,7 +38,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
             )}
 
             <aside className={cn(
-                "fixed lg:sticky top-0 left-0 z-50 bg-card border-r border-white/5 flex flex-col h-screen transition-all duration-300",
+                "fixed lg:sticky top-0 left-0 z-50 bg-card border-r border-border flex flex-col h-screen transition-all duration-300",
                 isCollapsed ? "w-20" : "w-64",
                 isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
             )}>
@@ -60,7 +60,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
                     {/* Mobile Close Button */}
                     <button
                         onClick={onMobileClose}
-                        className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-white/50"
+                        className="lg:hidden p-2 hover:bg-foreground/5 rounded-lg text-foreground/50"
                     >
                         <X className="w-6 h-6" />
                     </button>
@@ -77,7 +77,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
                                 isCollapsed && "justify-center px-0",
                                 isActive
                                     ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                    : "text-white/60 hover:bg-white/5 hover:text-white"
+                                    : "text-foreground/60 hover:bg-foreground/5 hover:text-foreground"
                             )}
                             title={isCollapsed ? item.label : ""}
                         >
@@ -100,7 +100,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
                 </nav>
 
                 <div className={cn(
-                    "p-4 border-t border-white/5",
+                    "p-4 border-t border-border",
                     isCollapsed && "px-0"
                 )}>
                     <button className={cn(

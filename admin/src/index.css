@@ -15,6 +15,8 @@
   --color-card: var(--card-color);
   --color-primary: var(--primary-color);
   --color-secondary: var(--secondary-color);
+  --color-foreground: var(--text-color);
+  --color-border: var(--border-color);
 }
 
 @layer base {

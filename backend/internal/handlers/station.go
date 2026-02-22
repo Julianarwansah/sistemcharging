@@ -111,6 +111,7 @@ func (h *StationHandler) Delete(c *gin.Context) {
 		return
 	}
 
+	logActivity(c, h.DB, "Hapus Stasiun", id.String(), "Admin menghapus stasiun dan semua konektor terkait")
 	c.JSON(http.StatusOK, gin.H{"message": "Stasiun dan semua data terkait berhasil dihapus"})
 }
 func (h *StationHandler) Create(c *gin.Context) {
@@ -170,6 +171,7 @@ func (h *StationHandler) Create(c *gin.Context) {
 	}
 
 	log.Printf("DEBUG: Station created successfully: %s (ID: %s)", station.Name, station.ID)
+	logActivity(c, h.DB, "Tambah Stasiun", station.Name, "Admin membuat stasiun charging baru")
 	c.JSON(http.StatusCreated, station)
 }
 func (h *StationHandler) Update(c *gin.Context) {
@@ -280,5 +282,6 @@ func (h *StationHandler) Update(c *gin.Context) {
 		return
 	}
 
+	logActivity(c, h.DB, "Update Stasiun", input.Name, "Admin memperbarui data stasiun")
 	c.JSON(http.StatusOK, gin.H{"message": "Stasiun berhasil diperbarui"})
 }
