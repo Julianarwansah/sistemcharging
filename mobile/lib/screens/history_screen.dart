@@ -75,91 +75,94 @@ class _HistoryScreenState extends State<HistoryScreen> {
             itemCount: sp.history.length,
             itemBuilder: (_, i) {
               final session = sp.history[i];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
+              return GestureDetector(
+                onTap: () => _showReceiptModal(session),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: _statusColor(
-                              session.status,
-                            ).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: _statusColor(
+                                session.status,
+                              ).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              _statusIcon(session.status),
+                              color: _statusColor(session.status),
+                              size: 22,
+                            ),
                           ),
-                          child: Icon(
-                            _statusIcon(session.status),
-                            color: _statusColor(session.status),
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                session.statusLabel,
-                                style: TextStyle(
-                                  color: _statusColor(session.status),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  session.statusLabel,
+                                  style: TextStyle(
+                                    color: _statusColor(session.status),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                _dateFormat.format(session.createdAt),
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.4),
-                                  fontSize: 12,
+                                const SizedBox(height: 2),
+                                Text(
+                                  _dateFormat.format(session.createdAt),
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.4),
+                                    fontSize: 12,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        Text(
-                          _currencyFormat.format(session.totalCost),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                          Text(
+                            _currencyFormat.format(session.totalCost),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        _detailChip(
-                          Icons.bolt_rounded,
-                          '${session.energyKWH.toStringAsFixed(2)} kWh',
-                        ),
-                        const SizedBox(width: 8),
-                        _detailChip(
-                          Icons.speed_rounded,
-                          '${session.powerKW.toStringAsFixed(1)} kW',
-                        ),
-                        const SizedBox(width: 8),
-                        if (session.connector != null)
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
                           _detailChip(
-                            Icons.electrical_services_rounded,
-                            session.connector!.connectorType,
+                            Icons.bolt_rounded,
+                            '${session.energyKWH.toStringAsFixed(2)} kWh',
                           ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 8),
+                          _detailChip(
+                            Icons.speed_rounded,
+                            '${session.powerKW.toStringAsFixed(1)} kW',
+                          ),
+                          const SizedBox(width: 8),
+                          if (session.connector != null)
+                            _detailChip(
+                              Icons.electrical_services_rounded,
+                              session.connector!.connectorType,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -221,5 +224,126 @@ class _HistoryScreenState extends State<HistoryScreen> {
       default:
         return Icons.hourglass_top_rounded;
     }
+  }
+
+  void _showReceiptModal(dynamic session) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1B263B),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Struk Ringkasan',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 32),
+            _receiptRow(
+              'Status',
+              session.statusLabel,
+              color: _statusColor(session.status),
+            ),
+            const Divider(color: Colors.white12, height: 32),
+            _receiptRow('Tanggal', _dateFormat.format(session.createdAt)),
+            _receiptRow(
+              'Energi Terpakai',
+              '${session.energyKWH.toStringAsFixed(2)} kWh',
+            ),
+            _receiptRow(
+              'Daya Maksimal',
+              '${session.powerKW.toStringAsFixed(1)} kW',
+            ),
+            if (session.connector != null) ...[
+              _receiptRow('Type Connector', session.connector!.connectorType),
+              _receiptRow(
+                'Tarif',
+                '${_currencyFormat.format(session.connector!.pricePerKWH)}/kWh',
+              ),
+            ],
+            const Divider(color: Colors.white12, height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Total Pembayaran',
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+                Text(
+                  _currencyFormat.format(session.totalCost),
+                  style: const TextStyle(
+                    color: Color(0xFF00E676),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00C853),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Tutup',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _receiptRow(String label, String value, {Color? color}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white54, fontSize: 14),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: color ?? Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

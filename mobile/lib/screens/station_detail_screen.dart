@@ -55,19 +55,22 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF00C853,
-                          ).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
-                          Icons.ev_station_rounded,
-                          color: Color(0xFF00E676),
-                          size: 28,
+                      Hero(
+                        tag: 'station-icon-${station.id}',
+                        child: Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF00C853,
+                            ).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(
+                            Icons.ev_station_rounded,
+                            color: Color(0xFF00E676),
+                            size: 28,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 14),

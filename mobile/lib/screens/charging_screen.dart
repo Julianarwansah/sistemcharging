@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -187,8 +188,15 @@ class _ChargingScreenState extends State<ChargingScreen>
                               color: const Color(
                                 0xFF00C853,
                               ).withValues(alpha: glow),
-                              blurRadius: 50,
-                              spreadRadius: 10,
+                              blurRadius: 60,
+                              spreadRadius: 15,
+                            ),
+                            BoxShadow(
+                              color: const Color(
+                                0xFF00E676,
+                              ).withValues(alpha: glow * 0.5),
+                              blurRadius: 30,
+                              spreadRadius: 5,
                             ),
                           ],
                         ),
@@ -200,21 +208,32 @@ class _ChargingScreenState extends State<ChargingScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                isComplete
-                                    ? Icons.check_circle_rounded
-                                    : Icons.bolt_rounded,
-                                color: const Color(0xFF00E676),
-                                size: 40,
-                              ),
+                                    isComplete
+                                        ? Icons.check_circle_rounded
+                                        : Icons.bolt_rounded,
+                                    color: const Color(0xFF00E676),
+                                    size: 40,
+                                  )
+                                  .animate(target: isComplete ? 1 : 0)
+                                  .shake(hz: 4, curve: Curves.easeInOut)
+                                  .scale(
+                                    begin: const Offset(1, 1),
+                                    end: const Offset(1.2, 1.2),
+                                  ),
                               const SizedBox(height: 8),
                               Text(
-                                '${session.progress}%',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 40,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                                    '${session.progress}%',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                  .animate(target: isComplete ? 1 : 0)
+                                  .shimmer(
+                                    duration: 1200.ms,
+                                    color: const Color(0xFF00E676),
+                                  ),
                               Text(
                                 isComplete ? 'Selesai!' : 'Charging...',
                                 style: TextStyle(
@@ -263,26 +282,36 @@ class _ChargingScreenState extends State<ChargingScreen>
                     SizedBox(
                       width: double.infinity,
                       height: 54,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          sp.clearActive();
-                          Navigator.pushReplacementNamed(context, '/home');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00C853),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: const Text(
-                          'Kembali ke Beranda',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
+                      child:
+                          ElevatedButton(
+                                onPressed: () {
+                                  sp.clearActive();
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    '/home',
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF00C853),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Kembali ke Beranda',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              )
+                              .animate()
+                              .scale(
+                                duration: 400.ms,
+                                curve: Curves.easeOutBack,
+                              )
+                              .fadeIn(),
                     )
                   else
                     SizedBox(

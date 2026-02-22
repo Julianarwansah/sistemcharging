@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import '../providers/auth_provider.dart';
 import '../providers/station_provider.dart';
 
@@ -277,12 +278,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: Consumer<StationProvider>(
                 builder: (_, sp, __) {
-                  if (sp.isLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF00E676),
-                      ),
-                    );
+                  if (sp.isLoading && sp.stations.isEmpty) {
+                    return _buildShimmerLoading();
                   }
                   if (sp.stations.isEmpty) {
                     return Center(
@@ -325,18 +322,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.all(16),
-                            leading: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFF00C853,
-                                ).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(
-                                Icons.ev_station_rounded,
-                                color: Color(0xFF00E676),
+                            leading: Hero(
+                              tag: 'station-icon-${station.id}',
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFF00C853,
+                                  ).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(
+                                  Icons.ev_station_rounded,
+                                  color: Color(0xFF00E676),
+                                ),
                               ),
                             ),
                             title: Text(
@@ -453,6 +453,25 @@ class _HomeScreenState extends State<HomeScreen> {
           fontSize: 11,
           fontWeight: FontWeight.w600,
           color: isActive ? const Color(0xFF00E676) : Colors.orange,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: 5,
+      itemBuilder: (_, __) => Shimmer.fromColors(
+        baseColor: Colors.white.withValues(alpha: 0.05),
+        highlightColor: Colors.white.withValues(alpha: 0.1),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          height: 90,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
     );

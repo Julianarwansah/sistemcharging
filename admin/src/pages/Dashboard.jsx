@@ -293,89 +293,88 @@ export default function Dashboard() {
                     Lihat Semua Stasiun
                 </button>
             </div>
-        </div>
 
-            {/* Live Monitoring Section (Real-time IoT simulation view) */ }
-    <div className="mt-8">
-        <LiveChargingMonitor activeStations={activeStations} />
-    </div>
+            {/* Live Monitoring Section (Real-time IoT simulation view) */}
+            <div className="mt-8">
+                <LiveChargingMonitor activeStations={activeStations} />
+            </div>
 
-    {/* Bottom Row: Logs */ }
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        {/* Recent Activity */}
-        <div className="glass rounded-3xl p-6 lg:p-8">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-primary" />
-                Sistem & Transaksi
-            </h3>
-            <div className="space-y-4">
-                {notifications.length > 0 ? (
-                    notifications.slice(0, 5).map((notif, idx) => (
-                        <div key={idx} className="flex items-start gap-4 p-4 rounded-2xl bg-foreground/5 border border-border hover:border-primary/20 transition-all">
-                            <div className={`p-2 rounded-lg ${notif.type === 'payment' ? 'bg-primary/10 text-primary' :
-                                notif.type === 'user' ? 'bg-blue-500/10 text-blue-500' :
-                                    'bg-orange-500/10 text-orange-500'
-                                }`}>
-                                {notif.type === 'payment' ? <DollarSign className="w-4 h-4" /> :
-                                    notif.type === 'user' ? <Users className="w-4 h-4" /> :
-                                        <Zap className="w-4 h-4" />}
+            {/* Bottom Row: Logs */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                {/* Recent Activity */}
+                <div className="glass rounded-3xl p-6 lg:p-8">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-primary" />
+                        Sistem & Transaksi
+                    </h3>
+                    <div className="space-y-4">
+                        {notifications.length > 0 ? (
+                            notifications.slice(0, 5).map((notif, idx) => (
+                                <div key={idx} className="flex items-start gap-4 p-4 rounded-2xl bg-foreground/5 border border-border hover:border-primary/20 transition-all">
+                                    <div className={`p-2 rounded-lg ${notif.type === 'payment' ? 'bg-primary/10 text-primary' :
+                                        notif.type === 'user' ? 'bg-blue-500/10 text-blue-500' :
+                                            'bg-orange-500/10 text-orange-500'
+                                        }`}>
+                                        {notif.type === 'payment' ? <DollarSign className="w-4 h-4" /> :
+                                            notif.type === 'user' ? <Users className="w-4 h-4" /> :
+                                                <Zap className="w-4 h-4" />}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-bold text-sm truncate">{notif.title}</p>
+                                        <p className="text-xs text-foreground/40 mt-1 line-clamp-2">{notif.message}</p>
+                                        <p className="text-[10px] text-foreground/20 mt-2">
+                                            {typeof notif.time === 'string' ? notif.time : new Date(notif.time).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="py-12 text-center">
+                                <p className="text-foreground/20 italic text-sm">Belum ada aktivitas terbaru.</p>
                             </div>
-                            <div className="min-w-0">
-                                <p className="font-bold text-sm truncate">{notif.title}</p>
-                                <p className="text-xs text-foreground/40 mt-1 line-clamp-2">{notif.message}</p>
-                                <p className="text-[10px] text-foreground/20 mt-2">
-                                    {typeof notif.time === 'string' ? notif.time : new Date(notif.time).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="py-12 text-center">
-                        <p className="text-foreground/20 italic text-sm">Belum ada aktivitas terbaru.</p>
+                        )}
                     </div>
-                )}
+                </div>
+
+                {/* Admin Activity Logs */}
+                <div className="glass rounded-3xl p-6 lg:p-8">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-primary" />
+                        Log Administrator
+                    </h3>
+                    <div className="space-y-4">
+                        {activityLogs.length > 0 ? (
+                            activityLogs.slice(0, 5).map((log, idx) => (
+                                <div key={log.id} className="flex items-start gap-4 p-4 rounded-2xl bg-foreground/5 border border-border hover:border-primary/20 transition-all">
+                                    <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                                        <ShieldCheck className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <p className="font-bold text-sm truncate">{log.admin_name}</p>
+                                            <span className="text-[9px] uppercase font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                                                {log.action}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-foreground/40 mt-1 line-clamp-2">{log.detail}</p>
+                                        <div className="flex items-center justify-between mt-2">
+                                            <p className="text-[10px] text-foreground/20">
+                                                {new Date(log.created_at).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}
+                                            </p>
+                                            <p className="text-[9px] text-foreground/10 font-mono">{log.ip_address}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="py-12 text-center">
+                                <p className="text-foreground/20 italic text-sm">Belum ada log aktivitas admin.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
-
-        {/* Admin Activity Logs */}
-        <div className="glass rounded-3xl p-6 lg:p-8">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-primary" />
-                Log Administrator
-            </h3>
-            <div className="space-y-4">
-                {activityLogs.length > 0 ? (
-                    activityLogs.slice(0, 5).map((log, idx) => (
-                        <div key={log.id} className="flex items-start gap-4 p-4 rounded-2xl bg-foreground/5 border border-border hover:border-primary/20 transition-all">
-                            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
-                                <ShieldCheck className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                                <div className="flex items-center justify-between gap-2">
-                                    <p className="font-bold text-sm truncate">{log.admin_name}</p>
-                                    <span className="text-[9px] uppercase font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                                        {log.action}
-                                    </span>
-                                </div>
-                                <p className="text-xs text-foreground/40 mt-1 line-clamp-2">{log.detail}</p>
-                                <div className="flex items-center justify-between mt-2">
-                                    <p className="text-[10px] text-foreground/20">
-                                        {new Date(log.created_at).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}
-                                    </p>
-                                    <p className="text-[9px] text-foreground/10 font-mono">{log.ip_address}</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="py-12 text-center">
-                        <p className="text-foreground/20 italic text-sm">Belum ada log aktivitas admin.</p>
-                    </div>
-                )}
-            </div>
-        </div>
-    </div>
-        </div >
     );
 }
 
