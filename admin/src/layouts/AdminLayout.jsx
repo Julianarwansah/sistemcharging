@@ -16,12 +16,26 @@ export default function AdminLayout() {
     const [admin, setAdmin] = useState(null);
     const [error, setError] = useState(null);
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+    const [hasUnread, setHasUnread] = useState(true);
     const dropdownRef = useRef(null);
+    const notificationRef = useRef(null);
     const location = useLocation();
 
     useEffect(() => {
         fetchProfile();
+        fetchNotifications();
     }, []);
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await adminService.getNotifications();
+            setNotifications(res.data || []);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    };
 
     // Handle click outside to close dropdown
     useEffect(() => {
@@ -29,10 +43,13 @@ export default function AdminLayout() {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setShowProfileDropdown(false);
             }
+            if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+                setShowNotificationDropdown(false);
+            }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [dropdownRef]);
+    }, [dropdownRef, notificationRef]);
 
     const fetchProfile = async () => {
         try {
@@ -57,6 +74,19 @@ export default function AdminLayout() {
     useEffect(() => {
         setIsMobileOpen(false);
     }, [location.pathname]);
+
+    // WebSocket for real-time notifications
+    useEffect(() => {
+        const ws = new WebSocket(`ws://${window.location.hostname}:8080/api/v1/ws/admin`);
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'balance_update' || data.type === 'session_update' || data.status) {
+                fetchNotifications();
+                setHasUnread(true);
+            }
+        };
+        return () => ws.close();
+    }, []);
 
     return (
         <div className="flex min-h-screen bg-background text-white overflow-x-hidden">
@@ -97,10 +127,54 @@ export default function AdminLayout() {
                     </div>
 
                     <div className="flex items-center gap-2 lg:gap-6">
-                        <button className="relative w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-full transition-colors">
-                            <Bell className="w-6 h-6 text-white/70" />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-card"></span>
-                        </button>
+                        <div className="relative" ref={notificationRef}>
+                            <button
+                                onClick={() => {
+                                    setShowNotificationDropdown(!showNotificationDropdown);
+                                    setHasUnread(false);
+                                }}
+                                className="relative w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-full transition-colors"
+                            >
+                                <Bell className="w-6 h-6 text-white/70" />
+                                {hasUnread && (
+                                    <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse"></span>
+                                )}
+                            </button>
+
+                            {/* Notifications Dropdown */}
+                            {showNotificationDropdown && (
+                                <div className="absolute right-0 top-full mt-2 w-80 bg-card border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+                                        <h3 className="text-sm font-bold">Aktivitas Terbaru</h3>
+                                    </div>
+                                    <div className="max-h-[400px] overflow-y-auto no-scrollbar">
+                                        {notifications.length > 0 ? (
+                                            notifications.map((notif, i) => (
+                                                <div key={i} className="px-4 py-3 border-b border-white/5 hover:bg-white/[0.02] transition-colors cursor-pointer group">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${notif.status === 'success' ? 'bg-primary' : notif.status === 'warning' ? 'bg-orange-500' : 'bg-blue-500'}`} />
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-bold group-hover:text-primary transition-colors">{notif.title}</p>
+                                                            <p className="text-[11px] text-white/50 mt-0.5 leading-relaxed">{notif.message}</p>
+                                                            <p className="text-[9px] text-white/30 mt-1 uppercase tracking-wider">
+                                                                {new Date(notif.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} • {new Date(notif.time).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="px-4 py-8 text-center">
+                                                <p className="text-xs text-white/30 italic">Tidak ada aktivitas terbaru.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="px-4 py-2 text-center border-t border-white/5 bg-white/[0.01]">
+                                        <button className="text-[10px] text-primary font-bold hover:underline">Lihat Semua Laporan</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         <div className="flex items-center gap-3 pl-3 lg:pl-6 border-l border-white/10 relative" ref={dropdownRef}>
                             <button

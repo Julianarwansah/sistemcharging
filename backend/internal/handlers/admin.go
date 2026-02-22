@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/Julianarwansah/sistemcharging/backend/internal/models"
 	"github.com/gin-gonic/gin"
@@ -192,4 +193,111 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+
+func (h *AdminHandler) GetRevenueStats(c *gin.Context) {
+	type RevenuePoint struct {
+		Date  string  `json:"date"`
+		Total float64 `json:"total"`
+	}
+
+	var stats []RevenuePoint
+
+	// Query for PostgreSQL to group by date and sum amount
+	query := `
+		SELECT 
+			TO_CHAR(date_series, 'DD Mon') as date,
+			COALESCE(SUM(p.amount), 0) as total
+		FROM 
+			generate_series(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, '1 day') AS date_series
+		LEFT JOIN 
+			payments p ON DATE(p.created_at) = date_series AND p.status = 'success'
+		GROUP BY 
+			date_series
+		ORDER BY 
+			date_series ASC;
+	`
+
+	if err := h.DB.Raw(query).Scan(&stats).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data statistik: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
+}
+
+func (h *AdminHandler) GetNotifications(c *gin.Context) {
+	type Activity struct {
+		Type    string    `json:"type"`
+		Title   string    `json:"title"`
+		Message string    `json:"message"`
+		Time    time.Time `json:"time"`
+		Status  string    `json:"status"`
+		RefID   string    `json:"ref_id"`
+	}
+
+	var activities []Activity
+
+	// 1. Recent Users
+	var recentUsers []models.User
+	h.DB.Order("created_at desc").Limit(5).Find(&recentUsers)
+	for _, u := range recentUsers {
+		activities = append(activities, Activity{
+			Type:    "user",
+			Title:   "Pengguna Baru",
+			Message: u.Name + " telah mendaftar",
+			Time:    u.CreatedAt,
+			Status:  "info",
+			RefID:   u.ID.String(),
+		})
+	}
+
+	// 2. Recent Payments
+	var recentPayments []models.Payment
+	h.DB.Preload("Session.User").Where("status = ?", models.PaymentSuccess).Order("created_at desc").Limit(5).Find(&recentPayments)
+	for _, p := range recentPayments {
+		userName := "Unknown"
+		if p.Session.User.Name != "" {
+			userName = p.Session.User.Name
+		}
+		activities = append(activities, Activity{
+			Type:    "payment",
+			Title:   "Pembayaran Berhasil",
+			Message: "Top up / Pembayaran dari " + userName,
+			Time:    p.CreatedAt,
+			Status:  "success",
+			RefID:   p.ID.String(),
+		})
+	}
+
+	// 3. Recent Sessions
+	var recentSessions []models.ChargingSession
+	h.DB.Preload("User").Order("created_at desc").Limit(5).Find(&recentSessions)
+	for _, s := range recentSessions {
+		activities = append(activities, Activity{
+			Type:    "session",
+			Title:   "Sesi Charging",
+			Message: "Sesi #" + s.ID.String()[:8] + " status " + string(s.Status),
+			Time:    s.CreatedAt,
+			Status:  "warning",
+			RefID:   s.ID.String(),
+		})
+	}
+
+	// Sort by time descending
+	// (Using simple slice sort because it's a small number of items)
+	for i := 0; i < len(activities); i++ {
+		for j := i + 1; j < len(activities); j++ {
+			if activities[i].Time.Before(activities[j].Time) {
+				activities[i], activities[j] = activities[j], activities[i]
+			}
+		}
+	}
+
+	// Limit to total 10 most recent
+	if len(activities) > 10 {
+		activities = activities[:10]
+	}
+
+	c.JSON(http.StatusOK, activities)
 }

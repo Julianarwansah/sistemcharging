@@ -20,29 +20,30 @@ import {
 } from 'recharts';
 import { adminService } from '../services/api';
 
-const data = [
-    { name: '01 Feb', total: 4000 },
-    { name: '05 Feb', total: 3000 },
-    { name: '10 Feb', total: 5000 },
-    { name: '15 Feb', total: 4500 },
-    { name: '20 Feb', total: 6000 },
-    { name: '21 Feb', total: 8000 },
+const initialChartData = [
+    { name: '', total: 0 },
 ];
 
 export default function Dashboard() {
     const [stats, setStats] = useState(null);
     const [stations, setStations] = useState([]);
+    const [revenueData, setRevenueData] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [statsRes, stationsRes] = await Promise.all([
+                const [statsRes, stationsRes, revenueRes] = await Promise.all([
                     adminService.getStats(),
-                    adminService.getStations()
+                    adminService.getStations(),
+                    adminService.getRevenueStats()
                 ]);
                 setStats(statsRes.data);
                 setStations(stationsRes.data.stations || []);
+                setRevenueData(revenueRes.data.map(item => ({
+                    name: item.date,
+                    total: item.total
+                })));
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
             } finally {
@@ -154,7 +155,7 @@ export default function Dashboard() {
                     </div>
                     <div className="h-[250px] sm:h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={data}>
+                            <AreaChart data={revenueData.length > 0 ? revenueData : initialChartData}>
                                 <defs>
                                     <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#00C853" stopOpacity={0.3} />

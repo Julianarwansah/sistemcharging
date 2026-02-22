@@ -15,6 +15,27 @@ export default function SettingsPage() {
                 <SettingsCard icon={Bell} title="Notifikasi" description="Atur jenis notifikasi ke grup WhatsApp/Email." />
                 <SettingsCard icon={Paintbrush} title="Tampilan" description="Ubah tema warna dan logo dashboard." />
             </div>
+
+            <div className="glass rounded-3xl p-8 mt-8 border border-primary/10">
+                <h3 className="text-xl font-bold mb-4">Informasi Sistem</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="p-4 bg-white/5 rounded-2xl">
+                        <p className="text-[10px] text-white/30 uppercase font-bold">API Version</p>
+                        <p className="font-bold mt-1 text-primary">v1.0.0-build.2024</p>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-2xl">
+                        <p className="text-[10px] text-white/30 uppercase font-bold">Status Server</p>
+                        <p className="font-bold mt-1 text-primary flex items-center gap-2">
+                            <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                            Online (Running)
+                        </p>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-2xl">
+                        <p className="text-[10px] text-white/30 uppercase font-bold">Database</p>
+                        <p className="font-bold mt-1">PostgreSQL 15 (Connected)</p>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

@@ -17,6 +17,8 @@ export default function Stations() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('Semua Status');
     const [formData, setFormData] = useState({
         name: '',
         address: '',
@@ -36,7 +38,6 @@ export default function Stations() {
     const fetchStations = async () => {
         try {
             const res = await adminService.getStations();
-            // Backend returns { "stations": [...], "total": X }
             setStations(res.data.stations || []);
         } catch (error) {
             console.error('Error fetching stations:', error);
@@ -44,6 +45,21 @@ export default function Stations() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        // WebSocket for real-time station status updates
+        const ws = new WebSocket(`ws://${window.location.hostname}:8080/api/v1/ws/admin`);
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            // Refresh stations on status updates
+            if (data.type === 'session_update' || data.type === 'status_update' || (data.status && data.station_id)) {
+                fetchStations();
+            }
+        };
+
+        return () => ws.close();
+    }, []);
 
     const handleDelete = async (id, name) => {
         if (window.confirm(`Apakah Anda yakin ingin menghapus stasiun "${name}"?`)) {
@@ -166,81 +182,99 @@ export default function Stations() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
                     <input
                         type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Cari nama stasiun atau lokasi..."
                         className="w-full bg-card border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-primary/50 transition-colors text-sm sm:text-base"
                     />
                 </div>
-                <select className="bg-card border border-white/10 rounded-2xl px-6 py-3.5 text-sm font-medium focus:outline-none w-full sm:min-w-[200px] sm:w-auto">
-                    <option>Semua Status</option>
-                    <option>Active</option>
-                    <option>Maintenance</option>
-                    <option>Offline</option>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="bg-card border border-white/10 rounded-2xl px-6 py-3.5 text-sm font-medium focus:outline-none w-full sm:min-w-[200px] sm:w-auto appearance-none"
+                >
+                    <option value="Semua Status">Semua Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Offline">Offline</option>
                 </select>
             </div>
 
             {/* Stations List */}
             <div className="grid grid-cols-1 gap-4">
-                {stations.map((station) => (
-                    <div key={station.id} className="glass rounded-3xl p-6 hover:border-primary/20 transition-all group">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                            <div className="flex items-center gap-5">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${station.status === 'Active' ? 'bg-primary/10 text-primary' : 'bg-orange-500/10 text-orange-500'
-                                    }`}>
-                                    <BatteryCharging className="w-8 h-8" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold flex flex-wrap items-center gap-3">
-                                        {station.name}
-                                        <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${station.status === 'Active' ? 'bg-primary/10 text-primary' : 'bg-orange-500/10 text-orange-500'
-                                            }`}>
-                                            {station.status}
-                                        </span>
-                                    </h3>
-                                    <p className="flex items-start gap-1.5 text-white/40 text-sm mt-1">
-                                        <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
-                                        <span>{station.address}</span>
-                                    </p>
-                                </div>
-                            </div>
+                {stations
+                    .filter(station => {
+                        const matchesSearch =
+                            station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            station.address.toLowerCase().includes(searchQuery.toLowerCase());
 
-                            <div className="flex flex-wrap items-center gap-4 sm:gap-6 lg:gap-12 pl-0 lg:pl-12 border-t lg:border-t-0 lg:border-l border-white/5 pt-6 lg:pt-0">
-                                <div className="min-w-[70px] sm:min-w-[80px]">
-                                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Konektor</p>
-                                    <p className="font-bold text-base sm:text-lg mt-1">{station.connectors?.length || 0}</p>
-                                </div>
-                                <div className="min-w-[70px] sm:min-w-[80px]">
-                                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Daya</p>
-                                    <p className="font-bold text-base sm:text-lg mt-1">{station.connectors?.[0]?.power_kw || '0'}kW</p>
-                                </div>
-                                <div className="flex-1 min-w-[140px] sm:min-w-[150px]">
-                                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Penggunaan</p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-                                            <div className="h-full bg-primary" style={{ width: '45%' }}></div>
-                                        </div>
-                                        <p className="font-bold text-xs sm:text-sm whitespace-nowrap">45%</p>
+                        const matchesStatus =
+                            statusFilter === 'Semua Status' ||
+                            station.status === statusFilter;
+
+                        return matchesSearch && matchesStatus;
+                    })
+                    .map((station) => (
+                        <div key={station.id} className="glass rounded-3xl p-6 hover:border-primary/20 transition-all group">
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                <div className="flex items-center gap-5">
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${station.status === 'Active' ? 'bg-primary/10 text-primary' : 'bg-orange-500/10 text-orange-500'
+                                        }`}>
+                                        <BatteryCharging className="w-8 h-8" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold flex flex-wrap items-center gap-3">
+                                            {station.name}
+                                            <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${station.status === 'Active' ? 'bg-primary/10 text-primary' : 'bg-orange-500/10 text-orange-500'
+                                                }`}>
+                                                {station.status}
+                                            </span>
+                                        </h3>
+                                        <p className="flex items-start gap-1.5 text-white/40 text-sm mt-1">
+                                            <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                                            <span>{station.address}</span>
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
-                                    <button
-                                        onClick={() => handleEdit(station)}
-                                        className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all border border-white/5 lg:border-0 flex items-center justify-center"
-                                    >
-                                        <Edit2 className="w-4 sm:w-5 h-4 sm:h-5" />
-                                        <span className="ml-2 lg:hidden text-xs sm:text-sm font-medium">Edit</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(station.id, station.name)}
-                                        className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-red-500/10 rounded-xl text-white/40 hover:text-red-500 transition-all border border-white/5 lg:border-0 flex items-center justify-center"
-                                    >
-                                        <Trash2 className="w-4 sm:w-5 h-4 sm:h-5" />
-                                        <span className="ml-2 lg:hidden text-xs sm:text-sm font-medium">Hapus</span>
-                                    </button>
+
+                                <div className="flex flex-wrap items-center gap-4 sm:gap-6 lg:gap-12 pl-0 lg:pl-12 border-t lg:border-t-0 lg:border-l border-white/5 pt-6 lg:pt-0">
+                                    <div className="min-w-[70px] sm:min-w-[80px]">
+                                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Konektor</p>
+                                        <p className="font-bold text-base sm:text-lg mt-1">{station.connectors?.length || 0}</p>
+                                    </div>
+                                    <div className="min-w-[70px] sm:min-w-[80px]">
+                                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Daya</p>
+                                        <p className="font-bold text-base sm:text-lg mt-1">{station.connectors?.[0]?.power_kw || '0'}kW</p>
+                                    </div>
+                                    <div className="flex-1 min-w-[140px] sm:min-w-[150px]">
+                                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Penggunaan</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                                                <div className="h-full bg-primary" style={{ width: '45%' }}></div>
+                                            </div>
+                                            <p className="font-bold text-xs sm:text-sm whitespace-nowrap">45%</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
+                                        <button
+                                            onClick={() => handleEdit(station)}
+                                            className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-all border border-white/5 lg:border-0 flex items-center justify-center"
+                                        >
+                                            <Edit2 className="w-4 sm:w-5 h-4 sm:h-5" />
+                                            <span className="ml-2 lg:hidden text-xs sm:text-sm font-medium">Edit</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(station.id, station.name)}
+                                            className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-red-500/10 rounded-xl text-white/40 hover:text-red-500 transition-all border border-white/5 lg:border-0 flex items-center justify-center"
+                                        >
+                                            <Trash2 className="w-4 sm:w-5 h-4 sm:h-5" />
+                                            <span className="ml-2 lg:hidden text-xs sm:text-sm font-medium">Hapus</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
             </div>
 
             {/* Modal Tambah Stasiun */}

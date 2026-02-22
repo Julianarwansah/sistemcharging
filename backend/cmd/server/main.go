@@ -87,6 +87,8 @@ func main() {
 			admin := protected.Group("/admin")
 			{
 				admin.GET("/stats", adminHandler.GetStats)
+				admin.GET("/revenue-stats", adminHandler.GetRevenueStats)
+				admin.GET("/notifications", adminHandler.GetNotifications)
 				admin.GET("/users", adminHandler.ListUsers)
 				admin.GET("/customers", adminHandler.ListCustomers)
 				admin.GET("/admins", adminHandler.ListAdmins)
