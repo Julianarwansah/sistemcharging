@@ -1,8 +1,6 @@
 class AppConfig {
-  // Change this to your backend server IP/URL
-  // For Android emulator use 10.0.2.2 instead of localhost
-  // For physical device use your computer's local IP
-  static const String baseUrl = 'http://192.168.1.10:8080';
+  // Backend URL - deployed on Back4App Containers
+  static const String baseUrl = 'https://sistemchargingbackend-2qmmi69.b4a.run';
   static const String apiUrl = '$baseUrl/api/v1';
-  static const String wsUrl = 'ws://192.168.1.10:8080/api/v1/ws';
+  static const String wsUrl = 'wss://sistemchargingbackend-2qmmi69.b4a.run/api/v1/ws';
 }
