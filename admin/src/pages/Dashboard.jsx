@@ -8,7 +8,6 @@ import {
     ArrowUpRight,
     ArrowDownRight,
     Zap,
-    Zap,
     Loader2,
     Clock
 } from 'lucide-react';

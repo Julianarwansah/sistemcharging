@@ -5,6 +5,7 @@ import { adminService } from '../services/api';
 import { Bell, Search, User, Menu, ChevronLeft, ChevronRight, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getStoredAppearance, applyTheme } from '../utils/theme';
 
 function cn(...inputs) {
     return twMerge(clsx(inputs));
@@ -24,6 +25,10 @@ export default function AdminLayout() {
     const location = useLocation();
 
     useEffect(() => {
+        // Apply stored appearance
+        const appearance = getStoredAppearance();
+        applyTheme(appearance.theme, appearance.accent);
+
         fetchProfile();
         fetchNotifications();
     }, []);

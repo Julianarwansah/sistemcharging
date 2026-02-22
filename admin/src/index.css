@@ -1,15 +1,26 @@
 @import "tailwindcss";
 
+:root {
+  --bg-color: #0D1B2A;
+  --card-color: #1B263B;
+  --primary-color: #00C853;
+  --secondary-color: #00E676;
+  --text-color: #FFFFFF;
+  --text-dim: rgba(255, 255, 255, 0.4);
+  --border-color: rgba(255, 255, 255, 0.05);
+}
+
 @theme {
-  --color-background: #0D1B2A;
-  --color-card: #1B263B;
-  --color-primary: #00C853;
-  --color-secondary: #00E676;
+  --color-background: var(--bg-color);
+  --color-card: var(--card-color);
+  --color-primary: var(--primary-color);
+  --color-secondary: var(--secondary-color);
 }
 
 @layer base {
   body {
-    @apply bg-background text-white antialiased;
+    @apply bg-background antialiased;
+    color: var(--text-color);
   }
 }
 

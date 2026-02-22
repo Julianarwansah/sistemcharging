@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Settings as SettingsIcon, Bell, Shield, Paintbrush, Globe, Loader2, Save, Key } from 'lucide-react';
 import { adminService } from '../services/api';
+import { getStoredAppearance, applyTheme, themes, accents } from '../utils/theme';
+import { Sun, Moon, Zap, Palette, Monitor } from 'lucide-react';
 
 export default function SettingsPage() {
     const [settings, setSettings] = useState({
@@ -9,6 +11,7 @@ export default function SettingsPage() {
         currency: 'IDR',
         timezone: 'Asia/Jakarta'
     });
+    const [appearance, setAppearance] = useState(getStoredAppearance());
     const [passwordData, setPasswordData] = useState({
         current_password: '',
         new_password: '',
@@ -44,6 +47,12 @@ export default function SettingsPage() {
         } finally {
             setIsUpdating(false);
         }
+    };
+
+    const handleAppearanceChange = (type, value) => {
+        const newAppearance = { ...appearance, [type]: value };
+        setAppearance(newAppearance);
+        applyTheme(newAppearance.theme, newAppearance.accent);
     };
 
     const handleChangePassword = async (e) => {
@@ -229,13 +238,74 @@ export default function SettingsPage() {
                         </div>
                     )}
 
-                    {(activeTab === 'notification' || activeTab === 'display') && (
+                    {activeTab === 'display' && (
+                        <div className="glass rounded-3xl p-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                            <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                                <Paintbrush className="w-6 h-6 text-primary" />
+                                Kustomisasi Tampilan
+                            </h3>
+
+                            <div className="space-y-10">
+                                {/* Theme Selection */}
+                                <section className="space-y-4">
+                                    <h4 className="text-sm font-bold text-white/40 uppercase tracking-widest pl-1">Tema Sistem</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <ThemeOption
+                                            active={appearance.theme === 'dark'}
+                                            onClick={() => handleAppearanceChange('theme', 'dark')}
+                                            title="Deep Sea (Dark)"
+                                            desc="Tema klasik biru gelap"
+                                            icon={Moon}
+                                            previewClass="bg-[#0D1B2A]"
+                                        />
+                                        <ThemeOption
+                                            active={appearance.theme === 'midnight'}
+                                            onClick={() => handleAppearanceChange('theme', 'midnight')}
+                                            title="Midnight (Abyss)"
+                                            desc="Total hitam minimalis"
+                                            icon={Monitor}
+                                            previewClass="bg-[#050505]"
+                                        />
+                                        <ThemeOption
+                                            active={appearance.theme === 'light'}
+                                            onClick={() => handleAppearanceChange('theme', 'light')}
+                                            title="Clean (Light)"
+                                            desc="Tampilan cerah & segar"
+                                            icon={Sun}
+                                            previewClass="bg-[#F8FAFC]"
+                                        />
+                                    </div>
+                                </section>
+
+                                {/* Accent Color Selection */}
+                                <section className="space-y-4">
+                                    <h4 className="text-sm font-bold text-white/40 uppercase tracking-widest pl-1">Warna Aksen</h4>
+                                    <div className="flex flex-wrap gap-4">
+                                        {Object.entries(accents).map(([key, colors]) => (
+                                            <button
+                                                key={key}
+                                                onClick={() => handleAppearanceChange('accent', key)}
+                                                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all relative ${appearance.accent === key ? 'ring-2 ring-white scale-110 shadow-lg' : 'hover:scale-105 opacity-70 hover:opacity-100'
+                                                    }`}
+                                                style={{ backgroundColor: colors['--primary-color'] }}
+                                            >
+                                                {appearance.accent === key && <Palette className="w-6 h-6 text-white" />}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-white/30 italic mt-2">Warna ini akan digunakan untuk tombol, icon, dan elemen aktif lainnya.</p>
+                                </section>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'notification' && (
                         <div className="glass rounded-3xl p-12 text-center animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <SettingsIcon className="w-10 h-10 text-white/20" />
+                                <Bell className="w-10 h-10 text-white/20" />
                             </div>
                             <h3 className="text-xl font-bold mb-2">Tersedia Segera</h3>
-                            <p className="text-white/40 text-sm">Fitur kustomisasi {activeTab === 'notification' ? 'notifikasi' : 'tampilan'} sedang dalam tahap pengembangan.</p>
+                            <p className="text-white/40 text-sm">Fitur kustomisasi notifikasi sedang dalam tahap pengembangan.</p>
                         </div>
                     )}
                 </div>
@@ -265,13 +335,33 @@ export default function SettingsPage() {
     );
 }
 
+function ThemeOption({ active, onClick, title, desc, icon: Icon, previewClass }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`flex flex-col gap-4 p-5 rounded-3xl border-2 transition-all text-left group ${active
+                ? 'border-primary bg-primary/5'
+                : 'border-white/5 hover:border-white/20 bg-white/5'
+                }`}
+        >
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${previewClass} border border-white/10 shadow-lg group-hover:scale-110 transition-transform`}>
+                <Icon className={`w-6 h-6 ${active ? 'text-primary' : 'text-white/40'}`} />
+            </div>
+            <div>
+                <p className={`font-bold text-sm ${active ? 'text-primary' : ''}`}>{title}</p>
+                <p className="text-xs text-white/40 mt-1">{desc}</p>
+            </div>
+        </button>
+    );
+}
+
 function TabButton({ active, onClick, icon: Icon, title }) {
     return (
         <button
             onClick={onClick}
             className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${active
-                    ? 'bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5'
-                    : 'hover:bg-white/5 text-white/60 hover:text-white'
+                ? 'bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5'
+                : 'hover:bg-white/5 text-white/60 hover:text-white'
                 }`}
         >
             <Icon className="w-5 h-5" />
