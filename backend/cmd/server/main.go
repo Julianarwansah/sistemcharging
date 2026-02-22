@@ -88,6 +88,8 @@ func main() {
 			{
 				admin.GET("/stats", adminHandler.GetStats)
 				admin.GET("/users", adminHandler.ListUsers)
+				admin.GET("/customers", adminHandler.ListCustomers)
+				admin.GET("/admins", adminHandler.ListAdmins)
 				admin.GET("/transactions", adminHandler.ListTransactions)
 				admin.POST("/register", authHandler.RegisterAdmin)
 				admin.PUT("/users/:id", adminHandler.UpdateUser)

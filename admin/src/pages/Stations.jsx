@@ -252,58 +252,58 @@ export default function Stations() {
                             <h2 className="text-2xl font-bold mb-6">{editStation ? 'Edit Stasiun' : 'Tambah Stasiun Baru'}</h2>
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Nama Stasiun</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Nama Stasiun</label>
                                         <input
                                             required
                                             type="text"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
                                             value={formData.name}
                                             onChange={e => setFormData({ ...formData, name: e.target.value })}
                                             placeholder="Stasiun Sudirman"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">QR Code</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">QR Code</label>
                                         <input
                                             required
                                             type="text"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
                                             value={formData.qr_code}
                                             onChange={e => setFormData({ ...formData, qr_code: e.target.value })}
                                             placeholder="STN-001"
                                         />
                                     </div>
-                                    <div className="sm:col-span-2 space-y-2">
-                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Alamat</label>
+                                    <div className="sm:col-span-2 space-y-1.5">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Alamat</label>
                                         <input
                                             required
                                             type="text"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
                                             value={formData.address}
                                             onChange={e => setFormData({ ...formData, address: e.target.value })}
                                             placeholder="Jl. Sudirman No. 12"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Latitude</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Latitude</label>
                                         <input
                                             required
                                             type="number"
                                             step="any"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
                                             value={formData.latitude}
                                             onChange={e => setFormData({ ...formData, latitude: e.target.value })}
                                             placeholder="-6.12345"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Longitude</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Longitude</label>
                                         <input
                                             required
                                             type="number"
                                             step="any"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
                                             value={formData.longitude}
                                             onChange={e => setFormData({ ...formData, longitude: e.target.value })}
                                             placeholder="106.12345"

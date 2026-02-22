@@ -11,19 +11,72 @@ export default function UsersPage() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [topUpAmount, setTopUpAmount] = useState('');
     const [roleFilter] = useState('user'); // Exclusively for customers
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [dropdownId, setDropdownId] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editFormData, setEditFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        role: 'user'
+    });
 
     useEffect(() => {
         fetchUsers();
+        // Close dropdown when clicking outside
+        const handleClickOutside = () => setDropdownId(null);
+        window.addEventListener('click', handleClickOutside);
+        return () => window.removeEventListener('click', handleClickOutside);
     }, []);
 
     const fetchUsers = async () => {
         try {
-            const res = await adminService.getUsers();
+            const res = await adminService.getCustomers();
             setUsers(res.data || []);
         } catch (error) {
             console.error('Error fetching users:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (user) => {
+        if (window.confirm(`Apakah Anda yakin ingin menghapus pelanggan "${user.name}"?`)) {
+            try {
+                await adminService.deleteUser(user.id);
+                fetchUsers();
+                alert('Pelanggan berhasil dihapus.');
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Gagal menghapus pelanggan: ' + (error.response?.data?.error || error.message));
+            }
+        }
+    };
+
+    const openEditModal = (user) => {
+        setSelectedUser(user);
+        setEditFormData({
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            role: user.role || 'user'
+        });
+        setShowEditModal(true);
+    };
+
+    const handleUpdateUser = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await adminService.updateUser(selectedUser.id, editFormData);
+            alert('Data pelanggan berhasil diperbarui!');
+            setShowEditModal(false);
+            fetchUsers();
+        } catch (error) {
+            console.error('Error updating user:', error);
+            alert('Gagal memperbarui data: ' + (error.response?.data?.error || error.message));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -57,7 +110,7 @@ export default function UsersPage() {
             (statusFilter === 'online' && user.is_online) ||
             (statusFilter === 'offline' && !user.is_online);
 
-        return matchesSearch && matchesStatus && user.role === 'user';
+        return matchesSearch && matchesStatus;
     });
 
     if (loading) {
@@ -113,10 +166,10 @@ export default function UsersPage() {
                             <tr className="border-b border-white/5 bg-white/[0.02]">
                                 <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Nama & Email</th>
                                 <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Telepon</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Saldo</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Bergabung</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Status</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Aksi</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-right">Saldo</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-center">Bergabung</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-center">Status</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -128,20 +181,20 @@ export default function UsersPage() {
                                             <p className="text-xs text-white/40 mt-1">{user.email}</p>
                                         </td>
                                         <td className="px-8 py-6 text-sm text-white/70">{user.phone || '-'}</td>
-                                        <td className="px-8 py-6 text-sm text-white/70">
+                                        <td className="px-8 py-6 text-sm text-white/70 text-right font-mono">
                                             Rp {user.balance?.toLocaleString('id-ID')}
                                         </td>
-                                        <td className="px-8 py-6 text-sm text-white/70">
+                                        <td className="px-8 py-6 text-sm text-white/70 text-center">
                                             {new Date(user.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
                                         </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-8 py-6 text-center">
                                             <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${user.is_online ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white/40'
                                                 }`}>
                                                 {user.is_online ? 'Online' : 'Offline'}
                                             </span>
                                         </td>
                                         <td className="px-8 py-6 text-right">
-                                            <div className="flex items-center justify-end gap-2">
+                                            <div className="flex items-center justify-end gap-2 relative">
                                                 <button
                                                     onClick={() => {
                                                         setSelectedUser(user);
@@ -151,9 +204,32 @@ export default function UsersPage() {
                                                 >
                                                     Top Up
                                                 </button>
-                                                <button className="p-2 hover:bg-white/5 rounded-lg text-white/40 transition-all">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDropdownId(dropdownId === user.id ? null : user.id);
+                                                    }}
+                                                    className="p-2 hover:bg-white/5 rounded-lg text-white/40 transition-all"
+                                                >
                                                     <MoreVertical className="w-5 h-5" />
                                                 </button>
+
+                                                {dropdownId === user.id && (
+                                                    <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                                        <button
+                                                            onClick={() => openEditModal(user)}
+                                                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 transition-colors"
+                                                        >
+                                                            Ubah Data
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(user)}
+                                                            className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/5 transition-colors"
+                                                        >
+                                                            Hapus Pelanggan
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -207,6 +283,69 @@ export default function UsersPage() {
                                         className="flex-1 bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                                     >
                                         {isSubmitting ? 'Memproses...' : 'Konfirmasi'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit User Modal */}
+            {showEditModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowEditModal(false)}></div>
+                    <div className="glass rounded-[2rem] w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-300">
+                        <div className="p-8">
+                            <h2 className="text-2xl font-bold mb-2">Ubah Data Pelanggan</h2>
+                            <p className="text-white/40 text-sm mb-6">Perbarui informasi profil {selectedUser?.name}</p>
+
+                            <form onSubmit={handleUpdateUser} className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Nama Lengkap</label>
+                                    <input
+                                        required
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
+                                        value={editFormData.name}
+                                        onChange={e => setEditFormData({ ...editFormData, name: e.target.value })}
+                                        placeholder="Nama Lengkap"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Email</label>
+                                    <input
+                                        required
+                                        type="email"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
+                                        value={editFormData.email}
+                                        onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
+                                        placeholder="user@charging.id"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Telepon</label>
+                                    <input
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
+                                        value={editFormData.phone}
+                                        onChange={e => setEditFormData({ ...editFormData, phone: e.target.value })}
+                                        placeholder="08123xxxx"
+                                    />
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowEditModal(false)}
+                                        className="flex-1 px-6 py-3 rounded-xl border border-white/10 font-bold hover:bg-white/5 transition-all text-sm"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="flex-1 bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 text-sm"
+                                    >
+                                        {isSubmitting ? 'Memproses...' : 'Simpan Perubahan'}
                                     </button>
                                 </div>
                             </form>

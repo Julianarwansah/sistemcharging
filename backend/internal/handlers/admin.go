@@ -47,6 +47,24 @@ func (h *AdminHandler) ListUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
+func (h *AdminHandler) ListCustomers(c *gin.Context) {
+	var users []models.User
+	if err := h.DB.Where("role = ?", "user").Order("created_at desc").Find(&users).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data pelanggan"})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+}
+
+func (h *AdminHandler) ListAdmins(c *gin.Context) {
+	var users []models.User
+	if err := h.DB.Where("role IN ?", []string{"admin", "super_admin"}).Order("created_at desc").Find(&users).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data administrator"})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+}
+
 func (h *AdminHandler) ListTransactions(c *gin.Context) {
 	var sessions []models.ChargingSession
 	if err := h.DB.Preload("User").Preload("Connector.Station").Order("created_at desc").Find(&sessions).Error; err != nil {
@@ -152,16 +170,25 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	updates := map[string]interface{}{
-		"name":  req.Name,
-		"email": req.Email,
-		"phone": req.Phone,
-		"role":  req.Role,
+	updates := make(map[string]interface{})
+	if req.Name != "" {
+		updates["name"] = req.Name
+	}
+	if req.Email != "" {
+		updates["email"] = req.Email
+	}
+	if req.Phone != "" {
+		updates["phone"] = req.Phone
+	}
+	if req.Role != "" {
+		updates["role"] = req.Role
 	}
 
-	if err := h.DB.Model(&user).Updates(updates).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui pengguna: " + err.Error()})
-		return
+	if len(updates) > 0 {
+		if err := h.DB.Model(&user).Updates(updates).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui pengguna: " + err.Error()})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, user)

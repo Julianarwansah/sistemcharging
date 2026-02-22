@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Outlet, useLocation, Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { adminService } from '../services/api';
-import { Bell, Search, User, Menu, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bell, Search, User, Menu, ChevronLeft, ChevronRight, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -15,11 +15,24 @@ export default function AdminLayout() {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [admin, setAdmin] = useState(null);
     const [error, setError] = useState(null);
+    const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+    const dropdownRef = useRef(null);
     const location = useLocation();
 
     useEffect(() => {
         fetchProfile();
     }, []);
+
+    // Handle click outside to close dropdown
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowProfileDropdown(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [dropdownRef]);
 
     const fetchProfile = async () => {
         try {
@@ -89,9 +102,9 @@ export default function AdminLayout() {
                             <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-card"></span>
                         </button>
 
-                        <div className="flex items-center gap-3 pl-3 lg:pl-6 border-l border-white/10">
+                        <div className="flex items-center gap-3 pl-3 lg:pl-6 border-l border-white/10 relative" ref={dropdownRef}>
                             <button
-                                onClick={handleLogout}
+                                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                                 className="flex items-center gap-3 group text-left"
                             >
                                 <div className="text-right hidden sm:block">
@@ -100,10 +113,42 @@ export default function AdminLayout() {
                                     </p>
                                     <p className="text-xs text-white/40">{admin?.email || (error ? 'Please re-login' : '...')}</p>
                                 </div>
-                                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/10 shrink-0 group-hover:border-primary/50 transition-all">
+                                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/10 shrink-0 group-hover:border-primary/50 transition-all relative">
                                     <User className="w-6 h-6 text-white/60 group-hover:text-primary" />
+                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center border-2 border-background">
+                                        <ChevronDown className="w-3 h-3 text-white" />
+                                    </div>
                                 </div>
                             </button>
+
+                            {/* Dropdown Menu */}
+                            {showProfileDropdown && (
+                                <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="px-4 py-3 border-b border-white/5 md:hidden">
+                                        <p className="text-sm font-bold truncate">{admin?.name}</p>
+                                        <p className="text-xs text-white/40 truncate">{admin?.email}</p>
+                                    </div>
+                                    <Link
+                                        to="/settings"
+                                        onClick={() => setShowProfileDropdown(false)}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-white/5 transition-colors text-white/70 hover:text-white"
+                                    >
+                                        <Settings className="w-4 h-4" />
+                                        <span>Pengaturan Profil</span>
+                                    </Link>
+                                    <div className="h-px bg-white/5 my-1"></div>
+                                    <button
+                                        onClick={() => {
+                                            setShowProfileDropdown(false);
+                                            handleLogout();
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-red-500/10 transition-colors text-red-400 hover:text-red-500"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        <span>Keluar</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </header>

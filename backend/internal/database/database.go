@@ -39,6 +39,12 @@ func Migrate() {
 	DB.Exec("ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL")
 	DB.Exec("ALTER TABLE users ALTER COLUMN google_id SET DEFAULT NULL")
 	DB.Exec("UPDATE users SET google_id = NULL WHERE google_id = ''")
+	DB.Exec("UPDATE users SET role = 'user' WHERE role IS NULL OR role = ''")
+
+	var userCount, adminCount int64
+	DB.Model(&models.User{}).Where("role = ?", "user").Count(&userCount)
+	DB.Model(&models.User{}).Where("role IN ?", []string{"admin", "super_admin"}).Count(&adminCount)
+	log.Printf("📊 Database Stats: %d customers, %d administrators", userCount, adminCount)
 
 	log.Println("✅ Database migrated successfully")
 }
@@ -111,15 +117,21 @@ func Seed() {
 
 	for _, email := range adminEmails {
 		var existingAdmin models.User
-		if err := DB.Unscoped().Where("email = ?", email).First(&existingAdmin).Error; err == nil {
-			log.Printf("✅ Found existing admin account (%s), updating...", email)
-			DB.Unscoped().Model(&existingAdmin).Updates(map[string]interface{}{
+		if err := DB.Where("email = ?", email).First(&existingAdmin).Error; err == nil {
+			log.Printf("✅ Found existing admin account (%s), updating credentials...", email)
+			DB.Model(&existingAdmin).Updates(map[string]interface{}{
 				"name":          "Super Admin",
 				"password_hash": string(hashedPassword),
 				"role":          "super_admin",
-				"deleted_at":    nil,
 			})
-		} else {
+		} else if err == gorm.ErrRecordNotFound {
+			// Double check if it exists but is deleted
+			var deletedAdmin models.User
+			if err := DB.Unscoped().Where("email = ?", email).First(&deletedAdmin).Error; err == nil {
+				log.Printf("ℹ️  Admin account (%s) exists but is deleted, skipping restore.", email)
+				continue
+			}
+
 			adminUser := models.User{
 				Name:         "Super Admin",
 				Email:        email,

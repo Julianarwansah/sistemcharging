@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Mail, Phone, Calendar, MoreVertical, Loader2, ShieldCheck } from 'lucide-react';
+import { Search, UserPlus, Mail, Phone, Calendar, MoreVertical, Loader2, ShieldCheck, ChevronDown } from 'lucide-react';
 import { adminService } from '../services/api';
 
 export default function AdminsPage() {
@@ -31,7 +31,7 @@ export default function AdminsPage() {
 
     const fetchUsers = async () => {
         try {
-            const res = await adminService.getUsers();
+            const res = await adminService.getAdmins();
             setUsers(res.data || []);
         } catch (error) {
             console.error('Error fetching admins:', error);
@@ -115,7 +115,7 @@ export default function AdminsPage() {
             (statusFilter === 'online' && user.is_online) ||
             (statusFilter === 'offline' && !user.is_online);
 
-        return matchesSearch && matchesStatus && (user.role === 'admin' || user.role === 'super_admin');
+        return matchesSearch && matchesStatus;
     });
 
     if (loading) {
@@ -174,10 +174,10 @@ export default function AdminsPage() {
                             <tr className="border-b border-white/5 bg-white/[0.02]">
                                 <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Nama & Email</th>
                                 <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Telepon</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Role</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Bergabung</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Status</th>
-                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30">Aksi</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-center">Role</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-center">Bergabung</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-center">Status</th>
+                                <th className="px-8 py-5 text-xs font-bold uppercase tracking-widest text-white/30 text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -191,16 +191,16 @@ export default function AdminsPage() {
                                         <td className="px-8 py-6">
                                             <p className="text-sm font-medium text-white/70">{user.phone || '-'}</p>
                                         </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-8 py-6 text-center">
                                             <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${user.role === 'super_admin' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'
                                                 }`}>
                                                 {user.role === 'super_admin' ? 'Super Admin' : 'Admin'}
                                             </span>
                                         </td>
-                                        <td className="px-8 py-6 text-sm text-white/70">
+                                        <td className="px-8 py-6 text-sm text-white/70 text-center">
                                             {new Date(user.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
                                         </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-8 py-6 text-center">
                                             <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${user.is_online ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white/40'
                                                 }`}>
                                                 {user.is_online ? 'Online' : 'Offline'}
@@ -261,9 +261,9 @@ export default function AdminsPage() {
                                 {isEditing ? `Mengubah data untuk ${formData.name}` : 'Buat akun administrator baru untuk sistem.'}
                             </p>
 
-                            <form onSubmit={handleRegisterOrUpdate} className="space-y-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Nama Lengkap</label>
+                            <form onSubmit={handleRegisterOrUpdate} className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+                                <div className="sm:col-span-2 space-y-1.5">
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Nama Lengkap</label>
                                     <input
                                         required
                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
@@ -272,8 +272,8 @@ export default function AdminsPage() {
                                         placeholder="Nama Lengkap"
                                     />
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Email</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Email</label>
                                     <input
                                         required
                                         type="email"
@@ -283,8 +283,8 @@ export default function AdminsPage() {
                                         placeholder="admin@charging.id"
                                     />
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Telepon</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Telepon</label>
                                     <input
                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm"
                                         value={formData.phone}
@@ -293,8 +293,8 @@ export default function AdminsPage() {
                                     />
                                 </div>
                                 {!isEditing && (
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Kata Sandi</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Kata Sandi</label>
                                         <input
                                             required
                                             type="password"
@@ -305,19 +305,24 @@ export default function AdminsPage() {
                                         />
                                     </div>
                                 )}
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Role</label>
-                                    <select
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm appearance-none cursor-pointer"
-                                        value={formData.role}
-                                        onChange={e => setFormData({ ...formData, role: e.target.value })}
-                                    >
-                                        <option value="admin">Admin</option>
-                                        <option value="super_admin">Super Admin</option>
-                                    </select>
+                                <div className={`space-y-1.5 ${isEditing ? 'sm:col-span-2' : ''}`}>
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Role</label>
+                                    <div className="relative">
+                                        <select
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 text-sm appearance-none cursor-pointer"
+                                            value={formData.role}
+                                            onChange={e => setFormData({ ...formData, role: e.target.value })}
+                                        >
+                                            <option value="admin">Admin</option>
+                                            <option value="super_admin">Super Admin</option>
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/20">
+                                            <ChevronDown className="w-4 h-4" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div className="flex gap-3 pt-4">
+                                <div className="flex gap-3 pt-6 sm:col-span-2">
                                     <button
                                         type="button"
                                         onClick={() => {
