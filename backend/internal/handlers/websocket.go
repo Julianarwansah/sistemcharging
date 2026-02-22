@@ -21,6 +21,9 @@ var upgrader = websocket.Upgrader{
 
 func (h *WebSocketHandler) HandleTopic(c *gin.Context) {
 	topic := c.Param("topic")
+	if len(topic) > 0 && topic[0] == '/' {
+		topic = topic[1:]
+	}
 	if topic == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Topic required"})
 		return

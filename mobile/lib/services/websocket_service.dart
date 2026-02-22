@@ -7,7 +7,7 @@ class WebSocketService {
   Function(Map<String, dynamic>)? onMessage;
 
   void connect(String sessionId, String token) {
-    final url = '${AppConfig.wsUrl}/session/$sessionId?token=$token';
+    final url = '${AppConfig.wsUrl}/$sessionId?token=$token';
     _channel = WebSocketChannel.connect(Uri.parse(url));
 
     _channel!.stream.listen(

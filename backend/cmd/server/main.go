@@ -134,7 +134,7 @@ func main() {
 			protected.POST("/admin/wallet/topup", walletHandler.AdminTopUp)
 
 			// WebSocket
-			protected.GET("/ws/:topic", wsHandler.HandleTopic)
+			protected.GET("/ws/*topic", wsHandler.HandleTopic)
 		}
 	}
 

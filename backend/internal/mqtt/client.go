@@ -169,6 +169,7 @@ func (mc *MQTTClient) subscribeToChargerStatus() {
 			"total_cost": session.TotalCost,
 		})
 		mc.hub.Broadcast(session.ID.String(), wsData)
+		mc.hub.Broadcast("admin", wsData)
 	})
 
 	log.Println("📡 Subscribed to charger/+/status")
