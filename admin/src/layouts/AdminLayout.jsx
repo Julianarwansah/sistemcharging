@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { adminService } from '../services/api';
 import { Bell, Search, User, Menu, ChevronLeft, ChevronRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -12,7 +13,32 @@ function cn(...inputs) {
 export default function AdminLayout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const [admin, setAdmin] = useState(null);
+    const [error, setError] = useState(null);
     const location = useLocation();
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        try {
+            const res = await adminService.getProfile();
+            setAdmin(res.data);
+            setError(null);
+        } catch (error) {
+            console.error('Error fetching admin profile:', error);
+            setError(error.response?.status === 401 ? 'Unauthorized' : 'Error');
+            if (error.response?.status === 401) {
+                handleLogout();
+            }
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('admin_token');
+        window.location.href = '/login';
+    };
 
     // Close mobile sidebar when route changes
     useEffect(() => {
@@ -64,13 +90,20 @@ export default function AdminLayout() {
                         </button>
 
                         <div className="flex items-center gap-3 pl-3 lg:pl-6 border-l border-white/10">
-                            <div className="text-right hidden sm:block">
-                                <p className="font-bold text-sm">Super Admin</p>
-                                <p className="text-xs text-white/40">admin@sistemcharging.com</p>
-                            </div>
-                            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/10 shrink-0">
-                                <User className="w-6 h-6 text-white/60" />
-                            </div>
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center gap-3 group text-left"
+                            >
+                                <div className="text-right hidden sm:block">
+                                    <p className="font-bold text-sm group-hover:text-primary transition-colors">
+                                        {admin?.name || (error ? 'Session Error' : 'Loading...')}
+                                    </p>
+                                    <p className="text-xs text-white/40">{admin?.email || (error ? 'Please re-login' : '...')}</p>
+                                </div>
+                                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/10 shrink-0 group-hover:border-primary/50 transition-all">
+                                    <User className="w-6 h-6 text-white/60 group-hover:text-primary" />
+                                </div>
+                            </button>
                         </div>
                     </div>
                 </header>

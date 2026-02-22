@@ -90,3 +90,79 @@ func (h *AdminHandler) ResetData(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Seluruh data transaksi telah direset dan saldo dikembalikan ke 0"})
 }
+func (h *AdminHandler) DeleteUser(c *gin.Context) {
+	targetID := c.Param("id")
+	requestorIDRaw, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Fetch requester info
+	var requestor models.User
+	if err := h.DB.First(&requestor, "id = ?", requestorIDRaw).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Fetch target info
+	var target models.User
+	if err := h.DB.Unscoped().First(&target, "id = ?", targetID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Pengguna tidak ditemukan"})
+		return
+	}
+
+	// Enforce rules
+	// 1. Prevent self-deletion
+	if target.ID.String() == requestor.ID.String() {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Anda tidak dapat menghapus akun Anda sendiri"})
+		return
+	}
+
+	// 2. Only Super Admin can delete other Super Admins
+	if target.Role == "super_admin" && requestor.Role != "super_admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Hanya Super Admin yang dapat menghapus Super Admin lainnya"})
+		return
+	}
+
+	if err := h.DB.Delete(&target).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menghapus pengguna: " + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Pengguna berhasil dihapus"})
+}
+
+func (h *AdminHandler) UpdateUser(c *gin.Context) {
+	id := c.Param("id")
+	var req struct {
+		Name  string `json:"name"`
+		Email string `json:"email"`
+		Phone string `json:"phone"`
+		Role  string `json:"role"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user models.User
+	if err := h.DB.First(&user, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Pengguna tidak ditemukan"})
+		return
+	}
+
+	updates := map[string]interface{}{
+		"name":  req.Name,
+		"email": req.Email,
+		"phone": req.Phone,
+		"role":  req.Role,
+	}
+
+	if err := h.DB.Model(&user).Updates(updates).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui pengguna: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}

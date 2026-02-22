@@ -78,7 +78,7 @@ func main() {
 
 		// Protected routes
 		protected := api.Group("")
-		protected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+		protected.Use(middleware.AuthMiddleware(cfg.JWTSecret, db))
 		{
 			// Profile
 			protected.GET("/auth/profile", authHandler.Profile)
@@ -90,6 +90,8 @@ func main() {
 				admin.GET("/users", adminHandler.ListUsers)
 				admin.GET("/transactions", adminHandler.ListTransactions)
 				admin.POST("/register", authHandler.RegisterAdmin)
+				admin.PUT("/users/:id", adminHandler.UpdateUser)
+				admin.DELETE("/users/:id", adminHandler.DeleteUser)
 				admin.POST("/reset", adminHandler.ResetData)
 			}
 

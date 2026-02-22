@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -103,11 +104,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	var user models.User
 	if err := h.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		log.Printf("Login failed: Email %s not found", req.Email)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Email atau password salah"})
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		log.Printf("Login failed: Password mismatch for %s. Hash in DB: %s", req.Email, user.PasswordHash)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Email atau password salah"})
 		return
 	}
@@ -161,7 +164,7 @@ func (h *AuthHandler) GoogleLogin(c *gin.Context) {
 			user = models.User{
 				Name:     name,
 				Email:    email,
-				GoogleID: googleID,
+				GoogleID: &googleID,
 			}
 			if err := h.DB.Create(&user).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal membuat akun google"})
@@ -171,9 +174,9 @@ func (h *AuthHandler) GoogleLogin(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 			return
 		}
-	} else if user.GoogleID == "" {
+	} else if user.GoogleID == nil {
 		// Link Google ID to existing email account
-		user.GoogleID = googleID
+		user.GoogleID = &googleID
 		h.DB.Save(&user)
 	}
 
@@ -241,12 +244,17 @@ func (h *AuthHandler) RegisterAdmin(c *gin.Context) {
 		Name:         req.Name,
 		Email:        req.Email,
 		Phone:        req.Phone,
-		Role:         req.Role, // Use the role from request
+		Role:         req.Role,
 		PasswordHash: string(hashedPassword),
+		GoogleID:     nil, // Explicitly set to nil to ensure GORM inserts NULL
 	}
 
 	if err := h.DB.Create(&admin).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal membuat akun admin"})
+		log.Printf("ERROR RegisterAdmin: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Gagal membuat akun admin",
+			"details": err.Error(),
+		})
 		return
 	}
 

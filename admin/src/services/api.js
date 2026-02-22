@@ -24,8 +24,10 @@ api.interceptors.request.use(
     }
 );
 
+
 export const adminService = {
     login: (email, password) => api.post('/auth/login', { email, password }),
+    getProfile: () => api.get('/auth/profile'),
     getStats: () => api.get('/admin/stats'),
     getUsers: () => api.get('/admin/users'),
     getTransactions: () => api.get('/admin/transactions'),
@@ -36,6 +38,8 @@ export const adminService = {
     getBalance: () => api.get('/wallet/balance'),
     topUp: (amount) => api.post('/wallet/topup', { amount }),
     adminTopUp: (userId, amount) => api.post('/admin/wallet/topup', { user_id: userId, amount }),
+    updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
+    deleteUser: (id) => api.delete(`/admin/users/${id}`),
     resetData: () => api.post('/admin/reset'),
     registerAdmin: (data) => api.post('/admin/register', data),
 };

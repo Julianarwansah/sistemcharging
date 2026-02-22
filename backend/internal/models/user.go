@@ -13,7 +13,7 @@ type User struct {
 	Email        string         `gorm:"size:100;uniqueIndex;not null" json:"email"`
 	Phone        string         `gorm:"size:20" json:"phone"`
 	PasswordHash string         `gorm:"size:255" json:"-"`
-	GoogleID     string         `gorm:"size:255;uniqueIndex" json:"-"`
+	GoogleID     *string        `gorm:"size:255;uniqueIndex;default:null" json:"-"`
 	IsOnline     bool           `gorm:"default:false" json:"is_online"`
 	Role         string         `gorm:"size:20;default:'user'" json:"role"`
 	Balance      float64        `gorm:"type:decimal(15,2);default:0" json:"balance"`

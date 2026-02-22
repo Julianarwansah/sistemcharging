@@ -17,8 +17,8 @@ export default function Login() {
             const res = await adminService.login(email, password);
             const { token, user } = res.data;
 
-            // Check if user is admin
-            if (user.role !== 'admin') {
+            // Check if user is admin or super_admin
+            if (user.role !== 'admin' && user.role !== 'super_admin') {
                 throw new Error('Hanya administrator yang diperbolehkan masuk.');
             }
 

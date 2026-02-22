@@ -4,12 +4,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Julianarwansah/sistemcharging/backend/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
-func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
+func AuthMiddleware(jwtSecret string, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -58,6 +60,12 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID format"})
 			c.Abort()
 			return
+		}
+
+		// Update online status on every authenticated request if it's currently false
+		// This handles cases where server restarted but user session is still active in browser
+		if err := db.Model(&models.User{}).Where("id = ? AND is_online = ?", userID, false).Update("is_online", true).Error; err == nil {
+			// log.Printf("Updated user %s status to online", userID)
 		}
 
 		c.Set("user_id", userID)

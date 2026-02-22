@@ -27,7 +27,7 @@ func Connect(cfg *config.Config) *gorm.DB {
 }
 
 func Migrate() {
-	err := DB.AutoMigrate(
+	DB.AutoMigrate(
 		&models.User{},
 		&models.Station{},
 		&models.Connector{},
@@ -35,9 +35,11 @@ func Migrate() {
 		&models.Payment{},
 		&models.WalletTransaction{},
 	)
-	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
-	}
+	// Manual migration for GoogleID to handle NULL values in unique index
+	DB.Exec("ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL")
+	DB.Exec("ALTER TABLE users ALTER COLUMN google_id SET DEFAULT NULL")
+	DB.Exec("UPDATE users SET google_id = NULL WHERE google_id = ''")
+
 	log.Println("✅ Database migrated successfully")
 }
 
@@ -101,24 +103,35 @@ func Seed() {
 		log.Println("ℹ️  Station seed data already exists, skipping station seed...")
 	}
 
-	// 2. Seed Admin User
-	log.Println("🔄 Resetting admin user (admin@charging.id)...")
+	// 2. Seed Admin Users
+	log.Println("🔄 Ensuring super admin users...")
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
 
-	// Delete any existing user with this email (including soft-deleted ones)
-	DB.Unscoped().Where("email = ?", "admin@charging.id").Delete(&models.User{})
+	adminEmails := []string{"admin@charging.id", "julianarwansahhh@gmail.com"}
 
-	adminUser := models.User{
-		Name:         "Super Admin",
-		Email:        "admin@charging.id",
-		Phone:        "081234567890",
-		PasswordHash: string(hashedPassword),
-		Role:         "admin",
-	}
-
-	if err := DB.Create(&adminUser).Error; err != nil {
-		log.Printf("⚠️  Failed to recreate admin user: %v", err)
-	} else {
-		log.Println("✅ Default admin user created successfully (admin@charging.id / admin123)")
+	for _, email := range adminEmails {
+		var existingAdmin models.User
+		if err := DB.Unscoped().Where("email = ?", email).First(&existingAdmin).Error; err == nil {
+			log.Printf("✅ Found existing admin account (%s), updating...", email)
+			DB.Unscoped().Model(&existingAdmin).Updates(map[string]interface{}{
+				"name":          "Super Admin",
+				"password_hash": string(hashedPassword),
+				"role":          "super_admin",
+				"deleted_at":    nil,
+			})
+		} else {
+			adminUser := models.User{
+				Name:         "Super Admin",
+				Email:        email,
+				Phone:        "081234567890",
+				PasswordHash: string(hashedPassword),
+				Role:         "super_admin",
+			}
+			if err := DB.Create(&adminUser).Error; err != nil {
+				log.Printf("⚠️  Failed to create admin user (%s): %v", email, err)
+			} else {
+				log.Printf("✅ Default super admin created successfully (%s)", email)
+			}
+		}
 	}
 }
