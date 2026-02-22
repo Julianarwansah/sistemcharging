@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import '../providers/auth_provider.dart';
@@ -17,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     Future.microtask(() {
       if (!mounted) return;
+      _checkLocationPermission();
       final sp = Provider.of<StationProvider>(context, listen: false);
       sp.loadStations();
       sp.startPolling();
@@ -333,9 +335,44 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
-                                child: const Icon(
-                                  Icons.ev_station_rounded,
-                                  color: Color(0xFF00E676),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.ev_station_rounded,
+                                      color: Color(0xFF00E676),
+                                    ),
+                                    if (station.distance != null)
+                                      Positioned(
+                                        bottom: -2,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF0D1B2A),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                            border: Border.all(
+                                              color: const Color(
+                                                0xFF00E676,
+                                              ).withValues(alpha: 0.3),
+                                              width: 0.5,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            station.distanceLabel,
+                                            style: const TextStyle(
+                                              color: Color(0xFF00E676),
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -402,6 +439,27 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _checkLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+
+    if (permission == LocationPermission.deniedForever) return;
+
+    // Refresh stations to get distance
+    if (mounted) {
+      Provider.of<StationProvider>(context, listen: false).loadStations();
+    }
   }
 
   Widget _quickAction({

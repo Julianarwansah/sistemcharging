@@ -7,6 +7,7 @@ class Station {
   final String qrCode;
   final String status;
   final List<Connector> connectors;
+  double? distance; // distance in meters
 
   Station({
     required this.id,
@@ -17,7 +18,16 @@ class Station {
     required this.qrCode,
     required this.status,
     required this.connectors,
+    this.distance,
   });
+
+  String get distanceLabel {
+    if (distance == null) return '';
+    if (distance! < 1000) {
+      return '${distance!.toStringAsFixed(0)} m';
+    }
+    return '${(distance! / 1000).toStringAsFixed(1)} km';
+  }
 
   factory Station.fromJson(Map<String, dynamic> json) {
     return Station(
@@ -28,7 +38,8 @@ class Station {
       longitude: (json['longitude'] ?? 0).toDouble(),
       qrCode: json['qr_code'] ?? '',
       status: json['status'] ?? '',
-      connectors: (json['connectors'] as List<dynamic>?)
+      connectors:
+          (json['connectors'] as List<dynamic>?)
               ?.map((c) => Connector.fromJson(c))
               .toList() ??
           [],
