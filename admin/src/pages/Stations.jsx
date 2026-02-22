@@ -265,6 +265,14 @@ export default function Stations() {
                                     </div>
                                     <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
                                         <button
+                                            onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${station.latitude},${station.longitude}`, '_blank')}
+                                            className="flex-1 lg:flex-none p-2.5 sm:p-3 hover:bg-emerald-500/10 rounded-xl text-foreground/40 hover:text-emerald-500 transition-all border border-border lg:border-0 flex items-center justify-center"
+                                            title="Buka di Maps"
+                                        >
+                                            <MapPin className="w-4 sm:w-5 h-4 sm:h-5" />
+                                            <span className="ml-2 lg:hidden text-xs sm:text-sm font-medium">Maps</span>
+                                        </button>
+                                        <button
                                             onClick={() => {
                                                 setSelectedQRStation(station);
                                                 setShowQRModal(true);

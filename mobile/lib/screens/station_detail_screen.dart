@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/station.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class StationDetailScreen extends StatefulWidget {
   const StationDetailScreen({super.key});
@@ -110,6 +111,23 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
                         color: station.status == 'active'
                             ? const Color(0xFF00E676)
                             : Colors.orange,
+                      ),
+                      const SizedBox(width: 10),
+                      InkWell(
+                        onTap: () async {
+                          final url = Uri.parse(
+                            'https://www.google.com/maps/search/?api=1&query=${station.latitude},${station.longitude}',
+                          );
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: _infoBadge(
+                          Icons.map_rounded,
+                          'Buka Maps',
+                          color: const Color(0xFF00E676),
+                        ),
                       ),
                     ],
                   ),

@@ -14,7 +14,8 @@ Untuk mengelola infrastruktur, memantau transaksi, dan mengatur stasiun.
 
 ### B. Mengelola Stasiun & Konektor
 1. Buka menu **Stations** di sidebar.
-2. Untuk menambah stasiun baru, klik tombol **Add Station**.
+2. Gunakan tombol **Maps** (ikon pin) di daftar stasiun untuk melihat lokasi fisik stasiun di Google Maps.
+3. Untuk menambah stasiun baru, klik tombol **Add Station**.
 3. Isi detail stasiun (Nama, Alamat, Koordinat).
 4. Di dalam stasiun, Anda dapat menambah **Connector** (titik pengisian), mengatur tarif per kWh, dan menentukan topic MQTT untuk komunikasi IoT.
 
@@ -38,7 +39,8 @@ Langkah-langkah bagi pemilik motor listrik untuk melakukan pengisian daya.
 
 ### B. Menemukan Stasiun
 1. Gunakan menu **Map** untuk melihat lokasi stasiun terdekat.
-2. Klik penanda (marker) untuk melihat status stasiun (Aktif/Rusak) dan jumlah konektor yang tersedia.
+2. Klik penanda (marker) untuk melihat status stasiun (Aktif/Rusak).
+3. Di dalam **Detail Stasiun**, klik tombol **Buka Maps** untuk langsung diarahkan ke Google Maps untuk navigasi.
 
 ### C. Memulai Pengisian (The Flow)
 1. **Scan QR**: Klik tombol scan di aplikasi dan arahkan ke kode QR yang ada di mesin charger.
