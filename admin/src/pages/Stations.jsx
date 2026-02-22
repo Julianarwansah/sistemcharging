@@ -48,7 +48,8 @@ export default function Stations() {
 
     useEffect(() => {
         // WebSocket for real-time station status updates
-        const ws = new WebSocket(`ws://${window.location.hostname}:8080/api/v1/ws/admin`);
+        const token = localStorage.getItem('admin_token');
+        const ws = new WebSocket(`ws://${window.location.hostname}:8080/api/v1/ws/admin${token ? `?token=${token}` : ''}`);
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);

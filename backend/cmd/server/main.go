@@ -85,16 +85,24 @@ func main() {
 			protected.POST("/auth/logout", authHandler.Logout)
 
 			admin := protected.Group("/admin")
+			admin.Use(middleware.RoleMiddleware(db, "admin", "super_admin"))
 			{
 				admin.GET("/stats", adminHandler.GetStats)
 				admin.GET("/revenue-stats", adminHandler.GetRevenueStats)
+				admin.GET("/active-stations", adminHandler.GetActiveStations)
 				admin.GET("/notifications", adminHandler.GetNotifications)
+				admin.GET("/settings", adminHandler.GetSettings)
+				admin.PUT("/settings", adminHandler.UpdateSettings)
+				admin.POST("/change-password", adminHandler.ChangePassword)
 				admin.GET("/users", adminHandler.ListUsers)
 				admin.GET("/customers", adminHandler.ListCustomers)
 				admin.GET("/admins", adminHandler.ListAdmins)
 				admin.GET("/transactions", adminHandler.ListTransactions)
 				admin.POST("/register", authHandler.RegisterAdmin)
 				admin.PUT("/users/:id", adminHandler.UpdateUser)
+				admin.POST("/users/:id/block", adminHandler.BlockUser)
+				admin.POST("/users/:id/unblock", adminHandler.UnblockUser)
+				admin.GET("/users/:id/transactions", adminHandler.GetUserTransactions)
 				admin.DELETE("/users/:id", adminHandler.DeleteUser)
 				admin.POST("/reset", adminHandler.ResetData)
 			}
@@ -103,9 +111,15 @@ func main() {
 			protected.GET("/stations", stationHandler.List)
 			protected.GET("/stations/:id", stationHandler.Get)
 			protected.GET("/stations/qr/:code", stationHandler.GetByQR)
-			protected.POST("/stations", stationHandler.Create)
-			protected.PUT("/stations/:id", stationHandler.Update)
-			protected.DELETE("/stations/:id", stationHandler.Delete)
+
+			// Station management routes - Require Admin
+			stationMgmt := protected.Group("/stations")
+			stationMgmt.Use(middleware.RoleMiddleware(db, "admin", "super_admin"))
+			{
+				stationMgmt.POST("", stationHandler.Create)
+				stationMgmt.PUT("/:id", stationHandler.Update)
+				stationMgmt.DELETE("/:id", stationHandler.Delete)
+			}
 
 			// Sessions
 			protected.POST("/sessions", sessionHandler.Create)

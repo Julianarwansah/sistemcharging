@@ -77,7 +77,8 @@ export default function AdminLayout() {
 
     // WebSocket for real-time notifications
     useEffect(() => {
-        const ws = new WebSocket(`ws://${window.location.hostname}:8080/api/v1/ws/admin`);
+        const token = localStorage.getItem('admin_token');
+        const ws = new WebSocket(`ws://${window.location.hostname}:8080/api/v1/ws/admin${token ? `?token=${token}` : ''}`);
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === 'balance_update' || data.type === 'session_update' || data.status) {

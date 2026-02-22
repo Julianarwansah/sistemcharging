@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     TrendingUp,
     Users,
@@ -7,7 +8,9 @@ import {
     ArrowUpRight,
     ArrowDownRight,
     Zap,
-    Loader2
+    Zap,
+    Loader2,
+    Clock
 } from 'lucide-react';
 import {
     AreaChart,
@@ -27,16 +30,21 @@ const initialChartData = [
 export default function Dashboard() {
     const [stats, setStats] = useState(null);
     const [stations, setStations] = useState([]);
+    const [activeStations, setActiveStations] = useState([]);
     const [revenueData, setRevenueData] = useState([]);
+    const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [statsRes, stationsRes, revenueRes] = await Promise.all([
+                const [statsRes, stationsRes, revenueRes, activeRes, notifRes] = await Promise.all([
                     adminService.getStats(),
                     adminService.getStations(),
-                    adminService.getRevenueStats()
+                    adminService.getRevenueStats(),
+                    adminService.getActiveStations(),
+                    adminService.getNotifications()
                 ]);
                 setStats(statsRes.data);
                 setStations(stationsRes.data.stations || []);
@@ -44,6 +52,8 @@ export default function Dashboard() {
                     name: item.date,
                     total: item.total
                 })));
+                setActiveStations(activeRes.data || []);
+                setNotifications(notifRes.data || []);
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
             } finally {
@@ -53,8 +63,8 @@ export default function Dashboard() {
         fetchDashboardData();
 
         // WebSocket for real-time updates
-        const token = localStorage.getItem('token');
-        const ws = new WebSocket(`ws://${window.location.hostname}:8080/api/v1/ws/admin`);
+        const token = localStorage.getItem('admin_token');
+        const ws = new WebSocket(`ws://${window.location.hostname}:8080/api/v1/ws/admin${token ? `?token=${token}` : ''}`);
 
         ws.onopen = () => {
             // Need to authenticate if using protected route
@@ -201,24 +211,65 @@ export default function Dashboard() {
 
                 {/* Popular Stations Section */}
                 <div className="glass rounded-3xl p-6 lg:p-8">
-                    <h3 className="text-xl font-bold mb-6">Stasiun Charging</h3>
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                        <Zap className="w-5 h-5 text-primary" />
+                        Performa Stasiun
+                    </h3>
                     <div className="space-y-6">
-                        {stations.slice(0, 4).map((station) => (
-                            <PopularStation
-                                key={station.id}
-                                name={station.name}
-                                uses={station.connectors?.length || 0}
-                                income={station.status}
-                                customLabel="status"
-                            />
-                        ))}
+                        {activeStations.length > 0 ? (
+                            activeStations.slice(0, 5).map((station) => (
+                                <StationRankItem
+                                    key={station.id}
+                                    name={station.name}
+                                    uses={station.transaction_count}
+                                    income={`Rp ${new Intl.NumberFormat('id-ID').format(station.total_revenue)}`}
+                                />
+                            ))
+                        ) : (
+                            <div className="py-8 text-center">
+                                <p className="text-white/30 text-xs italic">Belum ada data transaksi.</p>
+                            </div>
+                        )}
                     </div>
                     <button
-                        onClick={() => window.location.hash = '/stations'}
+                        onClick={() => navigate('/stations')}
                         className="w-full mt-8 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
                     >
                         Lihat Semua Stasiun
                     </button>
+                </div>
+            </div>
+
+            {/* Bottom Row: Recent Activity */}
+            <div className="glass rounded-3xl p-6 lg:p-8 mt-8">
+                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-primary" />
+                    Aktivitas Terbaru
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {notifications.length > 0 ? (
+                        notifications.slice(0, 6).map((notif, idx) => (
+                            <div key={idx} className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all">
+                                <div className={`p-2 rounded-lg ${notif.type === 'payment' ? 'bg-primary/10 text-primary' :
+                                    notif.type === 'user' ? 'bg-blue-500/10 text-blue-500' :
+                                        'bg-orange-500/10 text-orange-500'
+                                    }`}>
+                                    {notif.type === 'payment' ? <DollarSign className="w-4 h-4" /> :
+                                        notif.type === 'user' ? <Users className="w-4 h-4" /> :
+                                            <Zap className="w-4 h-4" />}
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="font-bold text-sm truncate">{notif.title}</p>
+                                    <p className="text-xs text-white/40 mt-1 line-clamp-2">{notif.message}</p>
+                                    <p className="text-[10px] text-white/20 mt-2">{notif.time}</p>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="col-span-full py-12 text-center">
+                            <p className="text-white/20 italic text-sm">Belum ada aktivitas terbaru.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

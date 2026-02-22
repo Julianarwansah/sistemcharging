@@ -6,6 +6,8 @@ import (
 
 	"github.com/Julianarwansah/sistemcharging/backend/internal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -300,4 +302,159 @@ func (h *AdminHandler) GetNotifications(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, activities)
+}
+
+func (h *AdminHandler) GetSettings(c *gin.Context) {
+	var configs []models.SystemConfig
+	if err := h.DB.Find(&configs).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil pengaturan: " + err.Error()})
+		return
+	}
+
+	settings := make(map[string]string)
+	for _, cfg := range configs {
+		settings[cfg.ConfigKey] = cfg.ConfigValue
+	}
+
+	c.JSON(http.StatusOK, settings)
+}
+
+func (h *AdminHandler) UpdateSettings(c *gin.Context) {
+	var req map[string]string
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Format data tidak valid"})
+		return
+	}
+
+	for key, value := range req {
+		if err := h.DB.Model(&models.SystemConfig{}).Where("config_key = ?", key).Update("config_value", value).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui pengaturan " + key})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Pengaturan berhasil diperbarui"})
+}
+
+func (h *AdminHandler) GetActiveStations(c *gin.Context) {
+	type StationMetric struct {
+		ID               string  `json:"id"`
+		Name             string  `json:"name"`
+		TransactionCount int     `json:"transaction_count"`
+		TotalRevenue     float64 `json:"total_revenue"`
+	}
+
+	var metrics []StationMetric
+
+	query := `
+		SELECT 
+			s.id, 
+			s.name, 
+			COUNT(p.id) as transaction_count, 
+			COALESCE(SUM(p.amount), 0) as total_revenue
+		FROM 
+			stations s
+		LEFT JOIN 
+			connectors c ON c.station_id = s.id
+		LEFT JOIN 
+			charging_sessions cs ON cs.connector_id = c.id
+		LEFT JOIN 
+			payments p ON p.session_id = cs.id AND p.status = 'success'
+		GROUP BY 
+			s.id, s.name
+		ORDER BY 
+			total_revenue DESC, transaction_count DESC
+		LIMIT 5
+	`
+
+	if err := h.DB.Raw(query).Scan(&metrics).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data performa stasiun"})
+		return
+	}
+
+	c.JSON(http.StatusOK, metrics)
+}
+
+func (h *AdminHandler) ChangePassword(c *gin.Context) {
+	var req struct {
+		CurrentPassword string `json:"current_password" binding:"required"`
+		NewPassword     string `json:"new_password" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Data tidak valid: " + err.Error()})
+		return
+	}
+
+	adminID, _ := c.Get("user_id")
+	var admin models.User
+	if err := h.DB.First(&admin, "id = ?", adminID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Admin tidak ditemukan"})
+		return
+	}
+
+	// Verify current password
+	if err := bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(req.CurrentPassword)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Kata sandi saat ini salah"})
+		return
+	}
+
+	// Hash new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengenkripsi kata sandi"})
+		return
+	}
+
+	if err := h.DB.Model(&admin).Update("password_hash", string(hashedPassword)).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui kata sandi"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Kata sandi berhasil diubah"})
+}
+
+func (h *AdminHandler) BlockUser(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID user tidak valid"})
+		return
+	}
+
+	if err := h.DB.Model(&models.User{}).Where("id = ?", id).Update("status", "blocked").Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memblokir user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User berhasil diblokir"})
+}
+
+func (h *AdminHandler) UnblockUser(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID user tidak valid"})
+		return
+	}
+
+	if err := h.DB.Model(&models.User{}).Where("id = ?", id).Update("status", "active").Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengaktifkan user kembali"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User berhasil diaktifkan kembali"})
+}
+
+func (h *AdminHandler) GetUserTransactions(c *gin.Context) {
+	userID := c.Param("id")
+	var transactions []models.Payment
+	if err := h.DB.Preload("User").Preload("Session.Connector.Station").
+		Joins("JOIN charging_sessions ON charging_sessions.id = payments.session_id").
+		Where("charging_sessions.user_id = ?", userID).
+		Order("payments.created_at desc").
+		Find(&transactions).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil riwayat transaksi pengguna: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, transactions)
 }

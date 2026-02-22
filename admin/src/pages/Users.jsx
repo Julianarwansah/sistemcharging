@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Mail, Phone, Calendar, MoreVertical, Loader2 } from 'lucide-react';
+import { Search, UserPlus, Mail, Phone, Calendar, MoreVertical, Loader2, XCircle, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { adminService } from '../services/api';
 
 export default function UsersPage() {
@@ -20,6 +20,9 @@ export default function UsersPage() {
         phone: '',
         role: 'user'
     });
+    const [showHistoryModal, setShowHistoryModal] = useState(false);
+    const [userTransactions, setUserTransactions] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -80,6 +83,21 @@ export default function UsersPage() {
         }
     };
 
+    const fetchHistory = async (user) => {
+        setLoadingHistory(true);
+        setSelectedUser(user);
+        setShowHistoryModal(true);
+        try {
+            const res = await adminService.getUserTransactions(user.id);
+            setUserTransactions(res.data || []);
+        } catch (error) {
+            console.error('Error fetching history:', error);
+            alert('Gagal mengambil riwayat transaksi.');
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
     const handleTopUp = async (e) => {
         e.preventDefault();
         if (!selectedUser || !topUpAmount) return;
@@ -97,6 +115,28 @@ export default function UsersPage() {
             alert('Gagal top up: ' + (error.response?.data?.error || error.message));
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleBlock = async (user) => {
+        if (window.confirm(`Apakah Anda yakin ingin MEMBLOKIR pelanggan "${user.name}"? Pelanggan tidak akan bisa login.`)) {
+            try {
+                await adminService.blockUser(user.id);
+                fetchUsers();
+                alert('Pelanggan berhasil diblokir.');
+            } catch (error) {
+                alert('Gagal memblokir: ' + (error.response?.data?.error || error.message));
+            }
+        }
+    };
+
+    const handleUnblock = async (user) => {
+        try {
+            await adminService.unblockUser(user.id);
+            fetchUsers();
+            alert('Pelanggan berhasil diaktifkan kembali.');
+        } catch (error) {
+            alert('Gagal mengaktifkan: ' + (error.response?.data?.error || error.message));
         }
     };
 
@@ -155,6 +195,7 @@ export default function UsersPage() {
                         <option value="all">Semua Status</option>
                         <option value="online">Online</option>
                         <option value="offline">Offline</option>
+                        <option value="blocked">Terblokir</option>
                     </select>
                 </div>
             </div>
@@ -188,10 +229,17 @@ export default function UsersPage() {
                                             {new Date(user.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
                                         </td>
                                         <td className="px-8 py-6 text-center">
-                                            <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${user.is_online ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white/40'
-                                                }`}>
-                                                {user.is_online ? 'Online' : 'Offline'}
-                                            </span>
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${user.is_online ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white/40'
+                                                    }`}>
+                                                    {user.is_online ? 'Online' : 'Offline'}
+                                                </span>
+                                                {user.status === 'blocked' && (
+                                                    <span className="text-[9px] uppercase font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                                        <ShieldAlert className="w-3 h-3" /> Terblokir
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex items-center justify-end gap-2 relative">
@@ -217,11 +265,32 @@ export default function UsersPage() {
                                                 {dropdownId === user.id && (
                                                     <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                                         <button
+                                                            onClick={() => fetchHistory(user)}
+                                                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 transition-colors"
+                                                        >
+                                                            Lihat Riwayat
+                                                        </button>
+                                                        <button
                                                             onClick={() => openEditModal(user)}
                                                             className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 transition-colors"
                                                         >
                                                             Ubah Data
                                                         </button>
+                                                        {user.status === 'blocked' ? (
+                                                            <button
+                                                                onClick={() => handleUnblock(user)}
+                                                                className="w-full text-left px-4 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+                                                            >
+                                                                Aktifkan Kembali
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleBlock(user)}
+                                                                className="w-full text-left px-4 py-2 text-sm text-orange-500 hover:bg-orange-500/5 transition-colors"
+                                                            >
+                                                                Blokir Akses
+                                                            </button>
+                                                        )}
                                                         <button
                                                             onClick={() => handleDelete(user)}
                                                             className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/5 transition-colors"
@@ -349,6 +418,60 @@ export default function UsersPage() {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* History Modal */}
+            {showHistoryModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowHistoryModal(false)}></div>
+                    <div className="glass rounded-[2rem] w-full max-w-2xl relative z-10 animate-in fade-in zoom-in duration-300 overflow-hidden">
+                        <div className="p-8">
+                            <div className="flex justify-between items-start mb-6">
+                                <div>
+                                    <h2 className="text-2xl font-bold">Riwayat Transaksi</h2>
+                                    <p className="text-white/40 text-sm mt-1">Pelanggan: {selectedUser?.name}</p>
+                                </div>
+                                <button onClick={() => setShowHistoryModal(false)} className="text-white/20 hover:text-white transition-colors">
+                                    <XCircle className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="max-h-[400px] overflow-y-auto no-scrollbar space-y-3">
+                                {loadingHistory ? (
+                                    <div className="py-20 flex flex-col items-center gap-4 text-white/30">
+                                        <Loader2 className="w-8 h-8 animate-spin" />
+                                        <p className="text-xs">Memuat riwayat...</p>
+                                    </div>
+                                ) : userTransactions.length > 0 ? (
+                                    userTransactions.map((trx) => (
+                                        <div key={trx.id} className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center justify-between group hover:border-primary/20 transition-all">
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-sm">#{trx.id.substring(0, 8)}</p>
+                                                <p className="text-[10px] text-white/40 mt-0.5">
+                                                    {new Date(trx.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} • {new Date(trx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                                </p>
+                                                <p className="text-[10px] text-primary font-bold uppercase mt-1">
+                                                    {trx.session?.connector?.station?.name || 'Manual'} ({trx.session?.connector?.connector_type || 'EV'})
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-bold text-sm">Rp {new Intl.NumberFormat('id-ID').format(trx.amount || 0)}</p>
+                                                <p className={`text-[9px] uppercase font-bold mt-1 px-2 py-0.5 rounded-md inline-block ${trx.status === 'success' ? 'bg-primary/10 text-primary' : 'bg-orange-500/10 text-orange-500'
+                                                    }`}>
+                                                    {trx.status}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="py-20 text-center text-white/20">
+                                        <p className="text-sm italic">Belum ada riwayat transaksi.</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

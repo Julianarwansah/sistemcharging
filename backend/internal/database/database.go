@@ -34,6 +34,7 @@ func Migrate() {
 		&models.ChargingSession{},
 		&models.Payment{},
 		&models.WalletTransaction{},
+		&models.SystemConfig{},
 	)
 	// Manual migration for GoogleID to handle NULL values in unique index
 	DB.Exec("ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL")
@@ -144,6 +145,39 @@ func Seed() {
 			} else {
 				log.Printf("✅ Default super admin created successfully (%s)", email)
 			}
+		}
+	}
+
+	// 3. Seed System Config
+	log.Println("🔄 Seeding system configurations...")
+	defaultConfigs := []models.SystemConfig{
+		{
+			ConfigKey:   "system_name",
+			ConfigValue: "SistemCharging Dashboard",
+			Description: "Nama sistem yang ditampilkan di dashboard",
+		},
+		{
+			ConfigKey:   "default_price_per_kwh",
+			ConfigValue: "2500",
+			Description: "Harga default per kWh jika tidak ditentukan di konektor",
+		},
+		{
+			ConfigKey:   "currency",
+			ConfigValue: "IDR",
+			Description: "Mata uang sistem",
+		},
+		{
+			ConfigKey:   "timezone",
+			ConfigValue: "Asia/Jakarta",
+			Description: "Zona waktu sistem",
+		},
+	}
+
+	for _, cfg := range defaultConfigs {
+		var count int64
+		DB.Model(&models.SystemConfig{}).Where("config_key = ?", cfg.ConfigKey).Count(&count)
+		if count == 0 {
+			DB.Create(&cfg)
 		}
 	}
 }

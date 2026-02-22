@@ -110,8 +110,14 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-		log.Printf("Login failed: Password mismatch for %s. Hash in DB: %s", req.Email, user.PasswordHash)
+		log.Printf("Login failed: Password mismatch for %s", req.Email)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Email atau password salah"})
+		return
+	}
+
+	// Check if user is blocked
+	if user.Status == "blocked" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Akun Anda telah diblokir. Silakan hubungi admin."})
 		return
 	}
 
@@ -178,6 +184,12 @@ func (h *AuthHandler) GoogleLogin(c *gin.Context) {
 		// Link Google ID to existing email account
 		user.GoogleID = &googleID
 		h.DB.Save(&user)
+	}
+
+	// Check if user is blocked
+	if user.Status == "blocked" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Akun Anda telah diblokir. Silakan hubungi admin."})
+		return
 	}
 
 	token, err := h.generateToken(user.ID)

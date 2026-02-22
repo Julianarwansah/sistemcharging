@@ -17,6 +17,8 @@ export default function Transactions() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [selectedTrx, setSelectedTrx] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         fetchTransactions();
@@ -186,7 +188,13 @@ export default function Transactions() {
                                             </span>
                                         </td>
                                         <td className="px-8 py-6 text-right">
-                                            <button className="p-2 bg-white/5 rounded-lg text-white/40 group-hover:text-white group-hover:bg-primary transition-all">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedTrx(trx);
+                                                    setShowModal(true);
+                                                }}
+                                                className="p-2 bg-white/5 rounded-lg text-white/40 hover:text-white hover:bg-primary transition-all"
+                                            >
                                                 <ArrowRight className="w-4 h-4" />
                                             </button>
                                         </td>
@@ -205,6 +213,80 @@ export default function Transactions() {
                     </div>
                 </div>
             </div>
+
+            {/* Transaction Detail Modal */}
+            {showModal && selectedTrx && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
+                    <div className="glass rounded-[2rem] w-full max-w-2xl relative z-10 animate-in fade-in zoom-in duration-300 overflow-hidden">
+                        <div className="p-8">
+                            <div className="flex justify-between items-start mb-6">
+                                <div>
+                                    <h2 className="text-2xl font-bold">Detail Transaksi</h2>
+                                    <p className="text-white/40 text-sm mt-1">ID: {selectedTrx.id}</p>
+                                </div>
+                                <span className={`text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-full ${selectedTrx.status === 'completed' || selectedTrx.status === 'paid' ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white/40'}`}>
+                                    {selectedTrx.status}
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-6">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2">Informasi Pengguna</p>
+                                        <div className="bg-white/5 rounded-2xl p-4">
+                                            <p className="font-bold">{selectedTrx.user?.name || 'Unknown'}</p>
+                                            <p className="text-xs text-white/40 mt-1">{selectedTrx.user?.email || '-'}</p>
+                                            <p className="text-xs text-white/40">{selectedTrx.user?.phone || '-'}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2">Lokasi Pengisian</p>
+                                        <div className="bg-white/5 rounded-2xl p-4">
+                                            <p className="font-bold">{selectedTrx.connector?.station?.name || 'Stasiun Manual'}</p>
+                                            <p className="text-xs text-white/40 mt-1">{selectedTrx.connector?.station?.address || '-'}</p>
+                                            <div className="flex gap-2 mt-3">
+                                                <span className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-bold uppercase">{selectedTrx.connector?.connector_type}</span>
+                                                <span className="text-[10px] bg-white/10 text-white/60 px-2 py-1 rounded-md font-bold uppercase">{selectedTrx.connector?.power_kw} kW</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2">Rincian Sesi</p>
+                                        <div className="bg-white/5 rounded-2xl p-4 space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs text-white/40">Waktu Mulai</span>
+                                                <span className="text-xs font-medium">{new Date(selectedTrx.created_at).toLocaleString('id-ID')}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs text-white/40">Energi Terpakai</span>
+                                                <span className="text-xs font-bold text-primary">{selectedTrx.energy_kwh} kWh</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs text-white/40">Harga per kWh</span>
+                                                <span className="text-xs font-medium">Rp {new Intl.NumberFormat('id-ID').format(selectedTrx.connector?.price_per_kwh || 0)}</span>
+                                            </div>
+                                            <div className="pt-3 border-t border-white/5 flex justify-between items-center">
+                                                <span className="text-sm font-bold">Total Biaya</span>
+                                                <span className="text-lg font-bold text-primary">Rp {new Intl.NumberFormat('id-ID').format(selectedTrx.total_cost || 0)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowModal(false)}
+                                        className="w-full bg-white/5 border border-white/10 hover:bg-white/10 text-white py-3 rounded-xl font-bold transition-all text-sm"
+                                    >
+                                        Tutup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
