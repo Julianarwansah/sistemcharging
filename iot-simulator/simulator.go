@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -41,6 +42,9 @@ type ChargerSimulator struct {
 func main() {
 	brokerURL := getEnv("MQTT_BROKER", "tcp://localhost:1883")
 	chargerID := getEnv("CHARGER_ID", "simulator-001")
+	mqttUser  := getEnv("MQTT_USER", "")
+	mqttPass  := getEnv("MQTT_PASS", "")
+	httpPort  := getEnv("SERVER_PORT", "7860")
 
 	sim := &ChargerSimulator{
 		chargerID: chargerID,
@@ -52,6 +56,11 @@ func main() {
 		AddBroker(brokerURL).
 		SetClientID("charger-" + chargerID).
 		SetAutoReconnect(true)
+
+	if mqttUser != "" {
+		opts.SetUsername(mqttUser)
+		opts.SetPassword(mqttPass)
+	}
 
 	opts.SetOnConnectHandler(func(c mqtt.Client) {
 		log.Printf("✅ Charger simulator [%s] connected to MQTT broker", chargerID)
@@ -69,6 +78,27 @@ func main() {
 
 	// Publish initial idle status
 	sim.publishStatus("idle", 0, 0)
+
+	// Start HTTP status server (required for Hugging Face Spaces)
+	go func() {
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			status := "idle"
+			if sim.charging {
+				status = "charging"
+			}
+			fmt.Fprintf(w, `{"service":"IoT Charger Simulator","charger_id":"%s","status":"%s","energy_kwh":%.3f,"broker":"%s"}`,
+				sim.chargerID, status, sim.energyKWH, brokerURL)
+		})
+		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"status":"ok","charger_id":"%s"}`, sim.chargerID)
+		})
+		log.Printf("🌐 HTTP status server running on port %s", httpPort)
+		if err := http.ListenAndServe(":"+httpPort, nil); err != nil {
+			log.Fatalf("HTTP server error: %v", err)
+		}
+	}()
 
 	log.Println("⚡ Charger simulator running. Waiting for commands...")
 	log.Println("   Press Ctrl+C to stop")

@@ -19,6 +19,8 @@ type Config struct {
 	JWTExpiryHrs   int
 	MQTTBroker     string
 	MQTTClientID   string
+	MQTTUser       string
+	MQTTPass       string
 	GoogleClientID string
 }
 
@@ -39,6 +41,8 @@ func Load() *Config {
 		JWTExpiryHrs:   expiryHrs,
 		MQTTBroker:     getEnv("MQTT_BROKER", "tcp://localhost:1883"),
 		MQTTClientID:   getEnv("MQTT_CLIENT_ID", "charging-api-server"),
+		MQTTUser:       getEnv("MQTT_USER", ""),
+		MQTTPass:       getEnv("MQTT_PASS", ""),
 		GoogleClientID: getEnv("GOOGLE_CLIENT_ID", ""),
 	}
 }

@@ -73,8 +73,12 @@ func NewMQTTClient(cfg *config.Config, db *gorm.DB, hub *WebSocketHub) *MQTTClie
 		AddBroker(cfg.MQTTBroker).
 		SetClientID(cfg.MQTTClientID).
 		SetAutoReconnect(true).
-		SetConnectRetry(true).
-		SetConnectRetryInterval(5 * time.Second)
+		SetConnectTimeout(15 * time.Second)
+
+	if cfg.MQTTUser != "" {
+		opts.SetUsername(cfg.MQTTUser)
+		opts.SetPassword(cfg.MQTTPass)
+	}
 
 	mc := &MQTTClient{
 		db:  db,
@@ -93,10 +97,12 @@ func NewMQTTClient(cfg *config.Config, db *gorm.DB, hub *WebSocketHub) *MQTTClie
 	client := mqtt.NewClient(opts)
 	mc.client = client
 
+	// Use WaitTimeout so MQTT connection never blocks HTTP server startup
 	token := client.Connect()
-	token.Wait()
-	if token.Error() != nil {
-		log.Printf("⚠️  MQTT connection failed (will retry): %v", token.Error())
+	if ok := token.WaitTimeout(20 * time.Second); !ok {
+		log.Printf("⚠️  MQTT connection timed out, server will start without MQTT (auto-reconnect enabled)")
+	} else if token.Error() != nil {
+		log.Printf("⚠️  MQTT connection failed: %v (auto-reconnect enabled)", token.Error())
 	}
 
 	return mc
